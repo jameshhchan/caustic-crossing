@@ -223,7 +223,7 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
         <div class="setup" aria-label="Level setup">
           <div class="stitle">Level setup <span class="tagline" id="lvTag"></span></div>
           <div class="srow"><span class="slab">Difficulty</span>
-            <div class="seg" role="group" aria-label="Difficulty" id="levelSeg">
+            <div class="seg" role="group" aria-label="Difficulty: pick one or more levels, or Custom" id="levelSeg">
               <button data-l="1" aria-pressed="true">Easy</button>
               <button data-l="2" aria-pressed="false">Medium</button>
               <button data-l="3" aria-pressed="false">Hard</button>
@@ -449,8 +449,8 @@ function randTruth(rng){
 }
 /* each event draws its own monitoring campaign: cadence and photometric errors */
 /* chosen difficulty sets the campaign; Random mixes all three */
-let level="1";
-/* Easy/Medium/Hard are presets for both the data and the parameters you fit; Custom = your own fit choices */
+let level="1",sel=new Set(["1"]),custom=false;   // level = this event's level; sel = levels the player picked
+/* Easy/Medium/Hard are presets for both the data and the parameters you fit; Custom = your own fit choices; Easy/Medium/Hard can be combined */
 const PRESET={"1":{geom:false,isco:false,gr:false},"2":{geom:true,isco:false,gr:false},"3":{geom:true,isco:true,gr:true}};
 const LEVELS={
   "1":{name:"Easy",camp:1,lo:0.01,hi:0.015,dt:1,tag:"Crayons allowed. Just find the size.",fit:"Fit r½ · nightly data, 1–1.5% errors"},
@@ -524,6 +524,9 @@ function pointMult(){return (1+(opts.geom?1.0:0)+(opts.isco?0.8:0)+(opts.gr?0.6:
 }
 function newDisk(rng){
   stop();
+  if(custom)level="any";
+  else{const arr=[...sel].sort();level=arr[Math.floor(rng()*arr.length)];Object.assign(opts,PRESET[level]);syncFitButtons();}
+  syncLevelButtons();
   // redraw disk and data until the event is solvable and, if a level is chosen, its data constraint matches it
   let best=null;
   for(let tries=0;tries<14;tries++){truth=randTruth(rng);tCurve=curveOf(truth);data=makeData(rng);evRate=rateEvent();
@@ -533,7 +536,7 @@ function newDisk(rng){
     if(miss===0)break;}
   ({truth,tCurve,data,evRate}=best);if(level!=="any")evRate.stars=+level;
   tFit=fit(tCurve);spikes=findSpikes();
-  $("evRate").innerHTML=`<span class="badge e${evRate.stars}" title="Overall rating: how informative the data are, plus the extra parameters you are fitting"><span class="stars">${"★".repeat(evRate.stars)}<i>${"★".repeat(3-evRate.stars)}</i></span>${level==="any"?"Custom":LVNAMES[+level]}</span><span class="pmult" title="Points earned = score × this. Grows with each extra parameter you fit and with the event's stars.">×${pointMult().toFixed(2)} pts</span>`;
+  $("evRate").innerHTML=`<span class="badge e${evRate.stars}" title="Overall rating: how informative the data are, plus the extra parameters you are fitting"><span class="stars">${"★".repeat(evRate.stars)}<i>${"★".repeat(3-evRate.stars)}</i></span>${level==="any"?"Any":LVNAMES[+level]}</span><span class="pmult" title="Points earned = score × this. Grows with each extra parameter you fit and with the event's stars.">×${pointMult().toFixed(2)} pts</span>`;
   $("campaign").textContent=`${level==="any"?["","Easy","Medium","Hard"][evRate.dLev]+" data · ":""}${data.t.length} epochs · ${data.cad} · ${(data.sig*100).toFixed(1)}% errors`;
   revealed=false;hints=[];$("hintList").innerHTML="";$("hintBox").hidden=true;$("hintBtn").disabled=false;$("result").hidden=true;$("truthLeg").hidden=true;$("pvQ").hidden=false;$("pvTrue").getContext("2d").clearRect(0,0,128,128);
   player={rh:25,inc:40,pa:90,rin:6,gr:0};{const fr=freeList();for(const k of ["rin","inc","pa","gr"])if(!fr.includes(k))player[k]=truth[k];}
@@ -748,11 +751,17 @@ $("hintBtn").addEventListener("click",()=>{
   hints.push({k:"data"});const li=document.createElement("li");li.textContent=msg;$("hintList").appendChild(li);$("hintBox").hidden=false;
 });
 function syncFitButtons(){document.querySelectorAll("#modeSeg button").forEach(b=>{const on=opts[b.dataset.o];b.setAttribute("aria-pressed",String(on));b.textContent=(on?"− ":"+ ")+b.dataset.n;});}
-function syncLevelButtons(){document.querySelectorAll("#levelSeg button").forEach(x=>{x.setAttribute("aria-pressed",String(x.dataset.l===level));x.title=LEVELS[x.dataset.l].fit;});$("lvTag").textContent=LEVELS[level].tag;}
+function syncLevelButtons(){
+  document.querySelectorAll("#levelSeg button").forEach(x=>{const l=x.dataset.l;x.setAttribute("aria-pressed",String(custom?l==="any":sel.has(l)));
+    x.title=l==="any"?LEVELS.any.fit:LEVELS[l].fit+" · click to add or remove";});
+  const names=[...sel].sort().map(l=>LEVELS[l].name);
+  $("lvTag").textContent=custom?LEVELS.any.tag:sel.size===1?LEVELS[[...sel][0]].tag:`Mixed bag: each event is ${names.join(" or ")}. This one is ${LEVELS[level]?.name||names[0]}.`;
+}
+function saveSel(){try{localStorage.setItem("cc-level-pick",custom?"c":[...sel].sort().join(""));}catch(e){}}
 document.querySelectorAll("#modeSeg button").forEach(b=>b.addEventListener("click",()=>{if(busy||!ev)return;const o=b.dataset.o;
   if(playMode==="timed"&&timed.active){toast("Difficulty is fixed during a timed run");return;}
   opts[o]=!opts[o];
-  if(level!=="any"){level="any";syncLevelButtons();try{localStorage.setItem("cc-level-pick",level);}catch(e){}toast("Switched to Custom difficulty");}
+  if(!custom){custom=true;level="any";saveSel();syncLevelButtons();toast("Switched to Custom");}
   syncFitButtons();newDisk(playMode==="daily"?diskRng():mulberry32((Math.random()*2**31)|0));}));
 $("cmapSel").addEventListener("change",e=>{cmap=e.target.value;buildLUT();
   try{localStorage.setItem("cc-cmap",cmap);}catch(e){}if(ev){paintFrames();drawMap();drawStrip();}});
@@ -789,7 +798,7 @@ function toast(msg){const t=$("toast");t.textContent=msg;t.hidden=false;clearTim
 let playMode="free",curSeed=0;
 function dayNumber(){const d=new Date();return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(2026,9,31))/864e5)+1;}
 function dailySeed(){return (Math.imul(dayNumber(),2654435761)^0x5eed1e)>>>0;}
-function diskRng(){return mulberry32(dailySeed()^0x7a11^(level==="any"?0:+level*7919));}
+function diskRng(){return mulberry32(dailySeed()^0x7a11^(custom?0:+[...sel].sort().join("")*7919));}
 function getDaily(){try{return JSON.parse(localStorage.getItem("cc-daily")||"{}");}catch(e){return {};}}
 function setDaily(o){try{localStorage.setItem("cc-daily",JSON.stringify(o));}catch(e){}}
 function fitLabel(){return ["r½",opts.geom&&"i, θ",opts.isco&&"ISCO",opts.gr&&"GR"].filter(Boolean).join(" + ");}
@@ -871,13 +880,19 @@ document.querySelectorAll("#playSeg button").forEach(b=>b.addEventListener("clic
   $("newBtn").hidden=playMode!=="free";
   if(playMode==="timed")startTimed();else newGame();}));
 
-document.querySelectorAll("#levelSeg button").forEach(b=>b.addEventListener("click",()=>{if(busy||b.dataset.l===level)return;
+document.querySelectorAll("#levelSeg button").forEach(b=>b.addEventListener("click",()=>{if(busy)return;
   if(playMode==="timed"&&timed.active){toast("Difficulty is fixed during a timed run");return;}
-  level=b.dataset.l;syncLevelButtons();if(PRESET[level])Object.assign(opts,PRESET[level]);syncFitButtons();
-  try{localStorage.setItem("cc-level-pick",level);}catch(e){}
+  const l=b.dataset.l;
+  if(l==="any"){if(custom)return;custom=true;}
+  else if(custom){custom=false;sel=new Set([l]);}
+  else if(sel.has(l)){if(sel.size===1){toast("Keep at least one level, or pick Custom");return;}sel.delete(l);}
+  else sel.add(l);
+  saveSel();syncLevelButtons();
   if(ev){newDisk(playMode==="daily"?diskRng():mulberry32((Math.random()*2**31)|0));if(playMode==="daily")updateModebar();}}));
-try{const l=localStorage.getItem("cc-level-pick");if(l&&LEVELS[l])level=l;}catch(e){}
-if(PRESET[level])Object.assign(opts,PRESET[level]);syncLevelButtons();syncFitButtons();
+try{const l=localStorage.getItem("cc-level-pick");
+  if(l==="c"||l==="any"){custom=true;level="any";}
+  else if(l&&/^[123]+$/.test(l)){sel=new Set(l.split(""));level=[...sel][0];}}catch(e){}
+if(!custom)Object.assign(opts,PRESET[level]);syncLevelButtons();syncFitButtons();
 window.addEventListener("resize",()=>{drawMap();drawLC();});
 drawMap();newGame();
 </script>
