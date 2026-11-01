@@ -7,25 +7,28 @@
 <style>:root{color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif} img{max-width:100%} [hidden]{display:none!important} *,*::before,*::after{box-sizing:border-box}</style>
 <title>Caustic Crossing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: observatory console. Map left (source plane), photometry + disk model right; single dark world. */
+/* Layout: observatory console. Map left (source plane), photometry + disk model right; single dark world.
+   Palette and type match the Quasar Microlensing Lab. */
 :root{
-  --good:#6fe39a;
-  --bg:#0a0c13; --panel:#11141f; --panel2:#171b29; --line:#262b3e; --fg:#e9e6dd; --muted:#9095aa;
-  --data:#dfe3ec; --model:#ffc857; --truth:#ef6f8a;
-  --display:"Unbounded","Trebuchet MS",system-ui,sans-serif;
+  --good:#93e2f0;
+  --bg:#06080e; --panel:#0d111a; --panel2:#141a27; --line:#222a3b; --fg:#e6e9f2; --muted:#8790a6;
+  --data:#c3c9d6; --model:#f2b45a; --truth:#ff93a6;
+  --display:'Spectral','Iowan Old Style',Georgia,serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
   color-scheme:dark;
 }
+/* page themes: Lab is the default; each theme redefines the colour tokens only */
+:root[data-ct="daylight"]{--bg:#f3f4f8;--panel:#ffffff;--panel2:#eceff5;--line:#d3d8e3;--fg:#1b2030;--muted:#5d6680;--data:#2f3646;--model:#c96f12;--truth:#d23b67;--good:#0f8aa0;color-scheme:light}
 html,body{background:var(--bg);color:var(--fg)}
 body{font-family:var(--body);font-size:14px;line-height:1.5}
 .page{max-width:1440px;margin:0 auto;padding-block:12px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
 header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:10px}
 header.top>div:first-child{display:flex;align-items:baseline;gap:6px 16px;flex-wrap:wrap}
 h1{font-family:var(--display);font-weight:600;font-size:clamp(20px,2.4vw,26px);letter-spacing:-.01em;margin:0;line-height:1.1}
-h1 span{color:var(--model)}
+h1 span{color:var(--model);font-style:italic;font-weight:400}
 .tag{color:var(--muted);margin:0;max-width:60ch}
 .hctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
@@ -127,7 +130,7 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
 @media (prefers-reduced-motion:reduce){.tally em{animation:none}}
 .warm{display:inline-block;width:72px;height:6px;background:var(--line);border-radius:3px;margin:0 8px 0 10px;vertical-align:middle;overflow:hidden}
 .warm i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--truth),var(--model) 60%,var(--good));transition:width .25s}
-.chi b.hot{color:var(--good);text-shadow:0 0 12px rgba(111,227,154,.7)}
+.chi b.hot{color:var(--good);text-shadow:0 0 12px rgba(147,226,240,.7)}
 #spikeCt{color:var(--good)}
 .modebar{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
 .modebar b{color:var(--model);font-weight:500}
@@ -155,6 +158,7 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
 .stitle .tagline{font-family:var(--body);font-size:12.5px;letter-spacing:0;text-transform:none;color:var(--muted);font-style:italic;margin-left:8px}
 #levelSeg{flex-wrap:wrap}
 #levelSeg button{padding:6px 9px}
+#levelSeg button.inauto{color:var(--model);box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--model) 45%,transparent)}
 .srow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .slab{font-family:var(--mono);font-size:12px;color:var(--muted);width:84px;flex:none}
 .setup .seg button{padding:6px 11px;font-size:12.5px}
@@ -175,6 +179,7 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
       <p class="tag">Fit a quasar accretion disk to 100 days of microlensing.</p>
     </div>
     <div class="hctl">
+      <label class="cmsel">Theme <select id="themeSel" aria-label="Page colour theme"><option value="lab">Lab</option><option value="daylight">Daylight</option></select></label>
       <div class="seg" role="group" aria-label="Play mode" id="playSeg">
         <button data-p="free" aria-pressed="true">Free play</button>
         <button data-p="daily" aria-pressed="false">Daily</button>
@@ -224,7 +229,8 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
           <div class="stitle">Level setup <span class="tagline" id="lvTag"></span></div>
           <div class="srow"><span class="slab">Difficulty</span>
             <div class="seg" role="group" aria-label="Difficulty: pick one or more levels, or Custom" id="levelSeg">
-              <button data-l="1" aria-pressed="true">Easy</button>
+              <button data-l="auto" aria-pressed="true">On track</button>
+              <button data-l="1" aria-pressed="false">Easy</button>
               <button data-l="2" aria-pressed="false">Medium</button>
               <button data-l="3" aria-pressed="false">Hard</button>
               <button data-l="any" aria-pressed="false">Custom</button>
@@ -449,7 +455,7 @@ function randTruth(rng){
 }
 /* each event draws its own monitoring campaign: cadence and photometric errors */
 /* chosen difficulty sets the campaign; Random mixes all three */
-let level="1",sel=new Set(["1"]),custom=false;   // level = this event's level; sel = levels the player picked
+let level="1",sel=new Set(["1"]),custom=false,auto=true;   // level = this event's level; sel = levels the player picked
 /* Easy/Medium/Hard are presets for both the data and the parameters you fit; Custom = your own fit choices; Easy/Medium/Hard can be combined */
 const PRESET={"1":{geom:false,isco:false,gr:false},"2":{geom:true,isco:false,gr:false},"3":{geom:true,isco:true,gr:true}};
 const LEVELS={
@@ -470,13 +476,13 @@ function makeData(rng){
 
 /* ---------- map colouring ---------- */
 /* same colour maps and order as the Quasar Microlensing Lab */
-const CMAPS={
-  ocean:[[0,3,8,22],[.3,16,56,106],[.6,38,128,170],[.85,168,230,234],[1,242,252,252]],
-  magma:[[0,0,0,4],[.25,81,18,124],[.5,183,55,121],[.75,252,137,97],[1,252,253,191]],
-  gray:[[0,6,6,8],[1,245,245,240]],
-  viridis:[[0,68,1,84],[.25,59,82,139],[.5,33,145,140],[.75,94,201,98],[1,253,231,37]],
-  rainbow:[[0,48,18,59],[.17,70,134,251],[.33,26,228,182],[.5,162,252,60],[.67,250,191,55],[.83,228,70,10],[1,122,4,3]],
-  cosmic:[[0,8,6,20],[.35,58,30,110],[.65,168,70,140],[.85,240,150,70],[1,255,236,190]]};
+const CMAPS={ // exact stops from the Quasar Microlensing Lab
+  ocean:[[0,4,6,11],[0.25,12,23,51],[0.45,16,56,102],[0.62,27,112,148],[0.78,74,179,194],[0.92,168,230,232],[1,242,252,255]],
+  magma:[[0,0,0,4],[0.17,44,17,95],[0.33,114,31,129],[0.5,183,55,121],[0.67,241,96,93],[0.83,254,176,120],[1,252,253,191]],
+  gray:[[0,6,6,8],[0.17,40,40,44],[0.33,78,78,84],[0.5,120,120,126],[0.67,164,164,170],[0.83,208,208,212],[1,252,252,252]],
+  viridis:[[0,68,1,84],[0.17,70,50,126],[0.33,54,92,141],[0.5,39,127,142],[0.67,31,161,135],[0.83,74,193,109],[1,253,231,37]],
+  rainbow:[[0,48,18,59],[0.17,70,134,251],[0.33,26,228,182],[0.5,162,252,60],[0.67,250,191,55],[0.83,228,70,10],[1,122,4,3]],
+  cosmic:[[0,4,6,11],[0.25,24,33,79],[0.45,59,63,153],[0.62,154,79,142],[0.78,224,137,78],[0.92,247,212,138],[1,255,250,240]]};
 let cmap="ocean",diskView="both",LUT=null;
 function buildLUT(){const S=CMAPS[cmap],l=new Uint8ClampedArray(768);for(let i=0;i<256;i++){const f=i/255;let k=0;while(k<S.length-2&&f>S[k+1][0])k++;const a=S[k],b=S[k+1],u=(f-a[0])/(b[0]-a[0]);for(let c=0;c<3;c++)l[i*3+c]=a[c+1]+(b[c+1]-a[c+1])*u;}LUT=l;
   $("cbGrad").style.background="linear-gradient(90deg,"+S.map(x=>`rgb(${x[1]},${x[2]},${x[3]}) ${x[0]*100}%`).join(",")+")";}
@@ -536,7 +542,7 @@ function newDisk(rng){
     if(miss===0)break;}
   ({truth,tCurve,data,evRate}=best);if(level!=="any")evRate.stars=+level;
   tFit=fit(tCurve);spikes=findSpikes();
-  $("evRate").innerHTML=`<span class="badge e${evRate.stars}" title="Overall rating: how informative the data are, plus the extra parameters you are fitting"><span class="stars">${"★".repeat(evRate.stars)}<i>${"★".repeat(3-evRate.stars)}</i></span>${level==="any"?"Any":LVNAMES[+level]}</span><span class="pmult" title="Points earned = score × this. Grows with each extra parameter you fit and with the event's stars.">×${pointMult().toFixed(2)} pts</span>`;
+  $("evRate").innerHTML=`<span class="badge e${evRate.stars}" title="Overall rating: how informative the data are, plus the extra parameters you are fitting"><span class="stars">${"★".repeat(evRate.stars)}<i>${"★".repeat(3-evRate.stars)}</i></span>${LVNAMES[level==="any"?evRate.stars:+level]}</span><span class="pmult" title="Points earned = score × this. Grows with each extra parameter you fit and with the event's stars.">×${pointMult().toFixed(2)} pts</span>`;
   $("campaign").textContent=`${level==="any"?["","Easy","Medium","Hard"][evRate.dLev]+" data · ":""}${data.t.length} epochs · ${data.cad} · ${(data.sig*100).toFixed(1)}% errors`;
   revealed=false;hints=[];$("hintList").innerHTML="";$("hintBox").hidden=true;$("hintBtn").disabled=false;$("result").hidden=true;$("truthLeg").hidden=true;$("pvQ").hidden=false;$("pvTrue").getContext("2d").clearRect(0,0,128,128);
   player={rh:25,inc:40,pa:90,rin:6,gr:0};{const fr=freeList();for(const k of ["rin","inc","pa","gr"])if(!fr.includes(k))player[k]=truth[k];}
@@ -548,12 +554,17 @@ function newDisk(rng){
 function sizeCanvas(cv){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;const w=Math.round(r.width*d),h=Math.round(r.height*d);if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}return {w,h,d};}
 function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
 /* disk surface brightness as a glowing sprite; alpha follows sqrt(I/Imax) */
-const ROSE=[239,111,138],spriteCache={};
+const spriteCache={};
 // your model: the warm "hot" ramp (deep orange → yellow → white); truth: rose ramp to white
-function diskRGB(role,a){if(role==="truth")return [ROSE[0]+(255-ROSE[0])*a*a,ROSE[1]+(255-ROSE[1])*a*a,ROSE[2]+(255-ROSE[2])*a*a];
-  return [Math.min(255,110+a*300),Math.min(255,25*a+a*a*290),Math.min(255,a*a*a*230)];}
+let MODELC=[242,180,90],TRUTHC=[255,147,166];
+function rgbOf(v){const h=css(v).replace("#","");return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16));}
+function themeColours(){MODELC=rgbOf("--model");TRUTHC=rgbOf("--truth");for(const k in spriteCache)delete spriteCache[k];}
+// ramp: deep shade of the theme colour → the colour → white at the hottest point
+function diskRGB(role,a){const c=role==="truth"?TRUTHC:MODELC;
+  if(a<0.55){const f=a/0.55;return c.map(v=>v*(0.35+0.65*f));}
+  const f=(a-0.55)/0.45;return c.map(v=>v+(255-v)*f*f);}
 function diskSprite(p,role,scale){
-  const key=[p.rh,p.inc,p.pa,p.rin,p.gr,Math.round(scale*4)].join("|");
+  const key=[p.rh,p.inc,p.pa,p.rin,p.gr,Math.round(scale*4),MODELC.join(),TRUTHC.join()].join("|");
   const hit=spriteCache[role];if(hit&&hit.key===key)return hit;
   const q=prep(p),Rrg=Math.min(q.r99,KMAX/PXPERRG),S=Math.max(16,Math.min(400,Math.ceil(2*Rrg*PXPERRG*scale)));
   const cv=document.createElement("canvas");cv.width=cv.height=S;const ctx=cv.getContext("2d"),im=ctx.createImageData(S,S),v=new Float64Array(S*S);let mx=0;
@@ -618,7 +629,7 @@ function drawLC(){
   ctx.save();ctx.beginPath();ctx.rect(ml,mt,w-ml-mr,ph);ctx.clip();
   const now=performance.now();let anim=false;
   for(const sp of spikes){if(!sp.lit)continue;const fl=Math.max(0,1-(now-sp.flash)/700);if(fl>0)anim=true;
-    ctx.fillStyle=`rgba(111,227,154,${0.10+0.35*fl})`;ctx.fillRect(X(sp.t0),mt,X(sp.t1)-X(sp.t0),ph);}
+    ctx.fillStyle=`rgba(${rgbOf("--good").join(",")},${0.12+0.3*fl})`;ctx.fillRect(X(sp.t0),mt,X(sp.t1)-X(sp.t0),ph);}
   if(anim)requestAnimationFrame(drawLC);
   const dc=css("--data");ctx.strokeStyle=dc;ctx.fillStyle=dc;ctx.lineWidth=d;
   for(let k=0;k<data.t.length;k++){const x=X(data.t[k]),y=Y(data.m[k]-mean),e=data.sig/(hi-lo)*ph;ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(x,y-e);ctx.lineTo(x,y+e);ctx.stroke();ctx.globalAlpha=1;ctx.beginPath();ctx.arc(x,y,2.2*d,0,Math.PI*2);ctx.fill();}
@@ -629,7 +640,7 @@ function drawLC(){
   ctx.strokeStyle=grid;ctx.strokeRect(ml,rt,w-ml-mr,rh);ctx.beginPath();ctx.moveTo(ml,RY(0));ctx.lineTo(w-mr,RY(0));ctx.stroke();
   ctx.fillStyle=mut;ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillText("resid",ml-6*d,rt+rh/2);
   if(pCurve){ctx.fillStyle=css("--model");for(let k=0;k<data.t.length;k++){const v=data.m[k]-interp(pCurve,data.t[k])-pFit.off;ctx.beginPath();ctx.arc(X(data.t[k]),Math.max(rt+2,Math.min(rt+rh-2,RY(-v))),1.8*d,0,Math.PI*2);ctx.fill();}}
-  ctx.strokeStyle="rgba(233,230,221,.5)";ctx.lineWidth=d;ctx.beginPath();ctx.moveTo(X(tNow),mt);ctx.lineTo(X(tNow),rt+rh);ctx.stroke();
+  ctx.strokeStyle=css("--muted");ctx.lineWidth=d;ctx.beginPath();ctx.moveTo(X(tNow),mt);ctx.lineTo(X(tNow),rt+rh);ctx.stroke();
 }
 function niceStep(x){const p=10**Math.floor(Math.log10(x)),f=x/p;return (f<1.5?1:f<3.5?2:f<7.5?5:10)*p;}
 function renderDisk(cv,p,role){
@@ -638,7 +649,7 @@ function renderDisk(cv,p,role){
   const bg=[5,6,12];
   for(let k=0;k<W*W;k++){const a=Math.sqrt(v[k]/(mx||1)),col=diskRGB(role,a);for(let c=0;c<3;c++)im.data[k*4+c]=bg[c]+(col[c]-bg[c])*Math.min(1,a*0.95);im.data[k*4+3]=255;}
   ctx.putImageData(im,0,0);
-  ctx.strokeStyle=role==="truth"?"rgba(239,111,138,.8)":"rgba(255,200,87,.8)";ctx.lineWidth=1;ctx.setLineDash([2,3]);const a=p.rh*W/(2*fov);
+  ctx.strokeStyle=css(role==="truth"?"--truth":"--model");ctx.lineWidth=1;ctx.setLineDash([2,3]);const a=p.rh*W/(2*fov);
   ctx.beginPath();ctx.ellipse(W/2,W/2,a,Math.max(a*Math.cos(p.inc*D2R),.5),p.pa*D2R,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle="rgba(233,230,221,.6)";ctx.font='10px "IBM Plex Mono",monospace';ctx.fillText("±"+fov+" r_g",6,W-7);
 }
@@ -752,12 +763,14 @@ $("hintBtn").addEventListener("click",()=>{
 });
 function syncFitButtons(){document.querySelectorAll("#modeSeg button").forEach(b=>{const on=opts[b.dataset.o];b.setAttribute("aria-pressed",String(on));b.textContent=(on?"− ":"+ ")+b.dataset.n;});}
 function syncLevelButtons(){
-  document.querySelectorAll("#levelSeg button").forEach(x=>{const l=x.dataset.l;x.setAttribute("aria-pressed",String(custom?l==="any":sel.has(l)));
-    x.title=l==="any"?LEVELS.any.fit:LEVELS[l].fit+" · click to add or remove";});
+  document.querySelectorAll("#levelSeg button").forEach(x=>{const l=x.dataset.l;
+    x.setAttribute("aria-pressed",String(l==="auto"?auto&&!custom:custom?l==="any":!auto&&sel.has(l)));
+    x.classList.toggle("inauto",auto&&!custom&&sel.has(l));
+    x.title=l==="auto"?"Follows your rank: Newbie and Stargazer Easy · Undergrad and Grad student Easy+Medium · Postdoc Medium · Tenure-tracker to Observatory director Medium+Hard · Caustic whisperer and up Hard":l==="any"?LEVELS.any.fit:LEVELS[l].fit+" · click to add or remove";});
   const names=[...sel].sort().map(l=>LEVELS[l].name);
-  $("lvTag").textContent=custom?LEVELS.any.tag:sel.size===1?LEVELS[[...sel][0]].tag:`Mixed bag: each event is ${names.join(" or ")}. This one is ${LEVELS[level]?.name||names[0]}.`;
+  $("lvTag").textContent=(auto&&!custom?`On track (${RANKS[rankIndex()][1]}): `:"")+(custom?LEVELS.any.tag:sel.size===1?LEVELS[[...sel][0]].tag:`Mixed bag: each event is ${names.join(" or ")}. This one is ${LEVELS[level]?.name||names[0]}.`);
 }
-function saveSel(){try{localStorage.setItem("cc-level-pick",custom?"c":[...sel].sort().join(""));}catch(e){}}
+function saveSel(){try{localStorage.setItem("cc-level-pick",custom?"c":auto?"a":[...sel].sort().join(""));}catch(e){}}
 document.querySelectorAll("#modeSeg button").forEach(b=>b.addEventListener("click",()=>{if(busy||!ev)return;const o=b.dataset.o;
   if(playMode==="timed"&&timed.active){toast("Difficulty is fixed during a timed run");return;}
   opts[o]=!opts[o];
@@ -836,6 +849,11 @@ const LOADQUIPS=["Shooting millions of rays through the star field…","Asking E
 const SPIKEQUIPS=["Peak nailed!","Threaded it!","Caustic tamed.","Right through the spike!"];
 
 /* ---------- accumulated points and rank ---------- */
+/* default difficulty for each rank (index into RANKS) */
+const RANK_DEFAULT=[["1"],["1"],["1","2"],["1","2"],["2"],["2","3"],["2","3"],["2","3"]]; // Caustic whisperer and above: Hard
+function rankIndex(){const t=getTally();return RANKS.reduce((a,r,k)=>t.pts>=r[0]?k:a,0);}
+function autoSet(){return new Set(RANK_DEFAULT[rankIndex()]||["3"]);}
+function lvList(set){return [...set].sort().map(l=>LEVELS[l].name).join(" + ");}
 const RANKS=[[0,"Newbie"],[1000,"Stargazer"],[3000,"Undergrad"],[7000,"Grad student"],[15000,"Postdoc"],
   [30000,"Tenure-tracker"],[50000,"Professor"],[80000,"Observatory director"],[120000,"Caustic whisperer"],[200000,"Einstein\u2019s favourite"]];
 function getTally(){try{return JSON.parse(localStorage.getItem("cc-tally")||'{"pts":0,"n":0}');}catch(e){return {pts:0,n:0};}}
@@ -852,7 +870,7 @@ function showTally(gain){
 }
 function addPoints(p){const t=getTally(),i0=RANKS.reduce((a,r,k)=>t.pts>=r[0]?k:a,0);t.pts+=p;t.n++;
   try{localStorage.setItem("cc-tally",JSON.stringify(t));}catch(e){}
-  showTally(p);const i1=RANKS.reduce((a,r,k)=>t.pts>=r[0]?k:a,0);if(i1>i0)toast(`New rank: ${RANKS[i1][1]}`);}
+  showTally(p);const i1=RANKS.reduce((a,r,k)=>t.pts>=r[0]?k:a,0);if(i1>i0){if(auto&&!custom){sel=autoSet();saveSel();syncLevelButtons();toast(`New rank: ${RANKS[i1][1]}. Difficulty is now ${lvList(sel)}`);}else toast(`New rank: ${RANKS[i1][1]}`);}}
 showTally(0);
 
 function afterReveal(score){
@@ -883,16 +901,26 @@ document.querySelectorAll("#playSeg button").forEach(b=>b.addEventListener("clic
 document.querySelectorAll("#levelSeg button").forEach(b=>b.addEventListener("click",()=>{if(busy)return;
   if(playMode==="timed"&&timed.active){toast("Difficulty is fixed during a timed run");return;}
   const l=b.dataset.l;
-  if(l==="any"){if(custom)return;custom=true;}
-  else if(custom){custom=false;sel=new Set([l]);}
+  if(l==="auto"){if(auto&&!custom)return;auto=true;custom=false;sel=autoSet();}
+  else if(l==="any"){if(custom)return;custom=true;}
+  else if(custom){custom=false;auto=false;sel=new Set([l]);}
+  else if(auto){auto=false;sel=new Set([l]);}
   else if(sel.has(l)){if(sel.size===1){toast("Keep at least one level, or pick Custom");return;}sel.delete(l);}
   else sel.add(l);
   saveSel();syncLevelButtons();
   if(ev){newDisk(playMode==="daily"?diskRng():mulberry32((Math.random()*2**31)|0));if(playMode==="daily")updateModebar();}}));
 try{const l=localStorage.getItem("cc-level-pick");
-  if(l==="c"||l==="any"){custom=true;level="any";}
-  else if(l&&/^[123]+$/.test(l)){sel=new Set(l.split(""));level=[...sel][0];}}catch(e){}
+  if(l==="c"||l==="any"){custom=true;auto=false;level="any";}
+  else if(l&&/^[123]+$/.test(l)){auto=false;sel=new Set(l.split(""));level=[...sel][0];}}catch(e){}
+if(auto&&!custom){sel=autoSet();level=[...sel][0];}
 if(!custom)Object.assign(opts,PRESET[level]);syncLevelButtons();syncFitButtons();
+
+/* ---------- page theme ---------- */
+function applyTheme(t){if(t==="lab")document.documentElement.removeAttribute("data-ct");else document.documentElement.setAttribute("data-ct",t);
+  $("themeSel").value=t;themeColours();try{localStorage.setItem("cc-theme",t);}catch(e){}
+  if(ev&&data){renderDisk($("pvYou"),player,"model");if(revealed)renderDisk($("pvTrue"),truth,"truth");drawLC();drawMap();drawStrip();}}
+$("themeSel").addEventListener("change",e=>applyTheme(e.target.value));
+try{const t=localStorage.getItem("cc-theme");applyTheme(["lab","daylight"].includes(t)?t:"lab");}catch(e){applyTheme("lab");}
 window.addEventListener("resize",()=>{drawMap();drawLC();});
 drawMap();newGame();
 </script>
