@@ -14,14 +14,17 @@
 :root{
   --good:#93e2f0;
   --bg:#06080e; --panel:#0d111a; --panel2:#141a27; --line:#222a3b; --fg:#e6e9f2; --muted:#8790a6;
-  --data:#c3c9d6; --model:#f2b45a; --truth:#ff93a6;
+  --data:#9aa3b8; --model:#f2b45a; --truth:#f6f8fc;
   --display:'Spectral','Iowan Old Style',Georgia,serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
   color-scheme:dark;
 }
 /* page themes: Lab is the default; each theme redefines the colour tokens only */
-:root[data-ct="daylight"]{--bg:#f3f4f8;--panel:#ffffff;--panel2:#eceff5;--line:#d3d8e3;--fg:#1b2030;--muted:#5d6680;--data:#2f3646;--model:#c96f12;--truth:#d23b67;--good:#0f8aa0;color-scheme:light}
+/* photometric bands, blue → red; distinct from model amber, truth rose and good cyan */
+:root{--bu:#a58bff;--bg_:#4ea8ff;--br:#45d08a;--bi:#ffc24a;--bz:#ff8a45;--by:#ff4f6a}
+:root[data-ct="daylight"]{--bu:#6a3fe0;--bg_:#1f6fd1;--br:#16884e;--bi:#a87800;--bz:#c4501c;--by:#c4213f}
+:root[data-ct="daylight"]{--bg:#f3f4f8;--panel:#ffffff;--panel2:#eceff5;--line:#d3d8e3;--fg:#1b2030;--muted:#5d6680;--data:#6b7489;--model:#c96f12;--truth:#11141c;--good:#0f8aa0;color-scheme:light}
 html,body{background:var(--bg);color:var(--fg)}
 body{font-family:var(--body);font-size:14px;line-height:1.5}
 .page{max-width:1440px;margin:0 auto;padding-block:12px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
@@ -64,6 +67,12 @@ h2{font-family:var(--display);font-weight:400;font-size:12px;letter-spacing:.09e
 #lc{width:100%;height:clamp(180px,calc(100vh - 590px),360px);display:block}
 .legend{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
 #campaign{margin-left:auto;font-size:11.5px}
+.bandleg{display:inline-flex;gap:4px;align-items:center}
+.bandleg button{font:600 11.5px var(--mono);padding:2px 7px;border-radius:4px;border:1px solid currentColor;background:transparent;cursor:pointer}
+.bandleg button[aria-pressed="false"]{opacity:.35}
+.mapband{display:inline-flex;gap:3px}
+.mapband button{font:600 11.5px var(--mono);padding:3px 7px;border-radius:4px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.mapband button[aria-pressed="true"]{color:var(--bg);border-color:transparent}
 .legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
 .chi{font-family:var(--mono);font-size:13px;color:var(--muted)}
 .chi b{font-size:20px;color:var(--fg);font-weight:500;margin-left:6px}
@@ -80,13 +89,12 @@ h2{font-family:var(--display);font-weight:400;font-size:12px;letter-spacing:.09e
 .ctl.locked{opacity:.5}
 .ctl.locked output{color:var(--muted)}
 .ctl .seg{grid-column:1/-1;width:max-content;max-width:100%;flex-wrap:wrap}
-#c-gr{grid-column:1/-1;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
-#c-gr output{margin-left:auto;order:3}
-#c-gr .seg{order:2}
+#c-gr .seg button{padding:4px 9px;font-size:11.5px}
 .ctl .seg button{padding:6px 10px;font-size:12px}
 .previews{display:flex;gap:12px}
 .pv{display:flex;flex-direction:column;gap:6px;align-items:center}
 .pv .box{position:relative;width:128px;height:128px;border-radius:6px;overflow:hidden;background:#05060c;border:1px solid var(--line)}
+.pv .truthbox{border-color:color-mix(in srgb,var(--truth) 60%,var(--line))}
 .pv canvas{width:100%;height:100%;display:block}
 .pv .q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:38px;color:var(--line)}
 .pv span{font-size:12px;color:var(--muted)}
@@ -95,6 +103,10 @@ h2{font-family:var(--display);font-weight:400;font-size:12px;letter-spacing:.09e
 .topband .setup{flex:1 1 380px}
 .actbtns{display:flex;flex-direction:column;gap:8px;justify-content:center;flex:0 0 auto}
 .actbtns .btn{width:100%}
+.actbtns{min-width:180px;justify-content:stretch}
+#revealBtn{flex:1;min-height:64px;background:var(--model);color:var(--bg);font-size:16px;font-weight:700;letter-spacing:.01em;border-radius:8px;box-shadow:0 4px 18px color-mix(in srgb,var(--model) 25%,transparent)}
+#revealBtn:not(:disabled):hover{filter:brightness(1.08)}
+@media (max-width:700px){#revealBtn{min-height:48px}}
 @media (max-width:700px){.actbtns{flex-direction:row;flex-wrap:wrap;width:100%}.actbtns .btn{width:auto;flex:1}}
 .maprow{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap}
 .maprow .cbar{flex:1 1 200px}
@@ -107,7 +119,7 @@ table{border-collapse:collapse;width:100%;font-size:12.5px}
 td,th{padding:4px 8px;text-align:right;font-variant-numeric:tabular-nums;border-bottom:1px solid var(--line);white-space:nowrap}
 th{font-weight:500;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
 td:first-child,th:first-child{text-align:left}
-td.y{color:var(--model)} td.t{color:var(--truth)}
+td.y{color:var(--model)} td.t{color:var(--truth);font-weight:700}
 .notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
 .notes h3{font-family:var(--display);font-weight:400;font-size:13px;margin:0 0 6px;color:var(--data)}
 .notes p,.notes li{color:var(--muted);margin:0;max-width:62ch}
@@ -141,7 +153,7 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--model);color:var(--bg);font-weight:600;padding:10px 18px;border-radius:999px;z-index:20;box-shadow:0 8px 30px rgba(0,0,0,.4)}
 .evrate{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1 1 auto;min-width:0}
 .evrate .badge{white-space:nowrap;--c:var(--model);display:inline-flex;align-items:center;gap:8px;border:1px solid var(--c);color:var(--c);border-radius:999px;padding:4px 12px;font-weight:600;font-size:13px;background:color-mix(in srgb,var(--c) 12%,transparent)}
-.evrate .badge.e1{--c:var(--good)} .evrate .badge.e2{--c:var(--model)} .evrate .badge.e3{--c:var(--truth)}
+.evrate .badge.e1{--c:var(--good)} .evrate .badge.e2{--c:var(--model)} .evrate .badge.e3{--c:#ff93a6} .evrate .badge.e4{--c:#b8a2ff}
 .evrate .stars{letter-spacing:1px!important;font-size:13px!important}
 .evrate .stars{letter-spacing:2px;font-size:15px}
 .evrate .stars i{font-style:normal;opacity:.3}
@@ -159,6 +171,11 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
 #levelSeg{flex-wrap:wrap}
 #levelSeg button{padding:6px 9px}
 #levelSeg button.inauto{color:var(--model);box-shadow:inset 0 -2px 0 color-mix(in srgb,var(--model) 45%,transparent)}
+.fitchips{display:inline-flex;gap:6px;flex-wrap:wrap}
+.fitchips span{font-size:12.5px;border:1px solid var(--model);color:var(--model);border-radius:6px;padding:4px 9px}
+.fitchips span.bd{border-color:var(--line);color:var(--muted)}
+body.custom #lc{height:clamp(150px,calc(100vh - 650px),330px)}
+#bandSeg{margin-left:4px}
 .srow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .slab{font-family:var(--mono);font-size:12px;color:var(--muted);width:84px;flex:none}
 .setup .seg button{padding:6px 11px;font-size:12.5px}
@@ -199,7 +216,7 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
       </div>
       <div class="mono" id="lensTxt" style="color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
       <div class="maprow"><div class="cbar mono"><span id="cbLo">μ 0.5</span><div class="grad" id="cbGrad"></div><span id="cbHi">μ 40</span></div>
-      <div class="viewopts">
+      <div class="viewopts"><span class="mapband" id="mapBand" aria-label="Band shown on the map"></span>
         <label class="cmsel">Disk <select id="diskSel" aria-label="How to draw the disk on the map"><option value="image">Image</option><option value="outline">Outline</option><option value="both" selected>Both</option></select></label>
         <label class="cmsel">Colours <select id="cmapSel" aria-label="Colour map for the magnification map"><option value="ocean">Ocean</option><option value="magma">Magma</option><option value="gray">Grey</option><option value="viridis">Viridis</option><option value="rainbow">Rainbow</option><option value="cosmic">Cosmic</option></select></label>
       </div></div>
@@ -216,9 +233,10 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
         <div class="head"><h2>Light curve</h2><div class="evrate" id="evRate" title="Difficulty of this event"></div><div class="chi">χ²/ν<b id="chi">—</b><span class="warm" title="How close your curve is to the data"><i id="warmBar"></i></span><span class="mono" id="spikeCt"></span></div></div>
         <canvas id="lc" aria-label="Light curve with data and model"></canvas>
         <div class="legend">
-          <span><i style="background:var(--data)"></i>Observed (with 1σ errors)</span>
+          <span id="legSingle"><span><i style="background:var(--data)"></i>Observed (with 1σ errors)</span>
           <span><i style="background:var(--model)"></i>Your model</span>
-          <span id="truthLeg" hidden><i style="background:var(--truth)"></i>True disk</span>
+          <span id="truthLeg" hidden><i style="background:var(--truth)"></i><b>True</b></span></span>
+          <span id="legMulti" hidden>dots data · solid your model<span id="truthLegM" hidden> · <b>dashed white: true</b></span> <span class="bandleg" id="bandLeg"></span></span>
           <span class="mono" id="campaign"></span>
         </div>
       </section>
@@ -233,41 +251,49 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
               <button data-l="1" aria-pressed="false">Easy</button>
               <button data-l="2" aria-pressed="false">Medium</button>
               <button data-l="3" aria-pressed="false">Hard</button>
+              <button data-l="4" aria-pressed="false">Extreme</button>
               <button data-l="any" aria-pressed="false">Custom</button>
             </div>
           </div>
-          <div class="srow"><span class="slab">Parameters</span>
+          <div class="srow" id="fitNow"><span class="slab">This event</span><span class="fitchips" id="fitChips"></span></div>
+          <div class="srow" id="rowParams"><span class="slab">Parameters</span>
             <span class="fixed">r½</span>
             <div class="seg" role="group" aria-label="Extra parameters to fit" id="modeSeg">
               <button id="m-geom" data-o="geom" data-n="i, θ" aria-pressed="false">+ i, θ</button>
               <button id="m-isco" data-o="isco" data-n="ISCO" aria-pressed="false">+ ISCO</button>
               <button id="m-gr" data-o="gr" data-n="GR" aria-pressed="false">+ GR</button>
+              <button id="m-beta" data-o="beta" data-n="slope" aria-pressed="false" title="Temperature slope β, T ∝ r^−β">+ slope</button>
+            </div>
+            <div class="seg" role="group" aria-label="Photometric bands" id="bandSeg">
+              <button data-nb="1" aria-pressed="true" title="r band only">r</button>
+              <button data-nb="3" aria-pressed="false" title="g, r, i">gri</button>
+              <button data-nb="6" aria-pressed="false" title="u, g, r, i, z, y (Rubin LSST)">ugrizy</button>
             </div>
           </div>
         </div>
         <div class="actbtns">
             <button class="btn ghost" id="hintBtn">Hint <span class="mono" id="hintCost">−5 pts</span></button>
             <button class="btn" id="revealBtn">Lock in &amp; reveal</button>
-            <button class="btn ghost" id="newBtn">New event</button>
           </div>
         </div>
         <div class="modelgrid">
           <div class="ctls">
-            <div class="ctl" id="c-rh"><label for="s-rh">Half-light radius<small>r½</small></label><output id="o-rh"></output><input type="range" id="s-rh" min="6" max="60" step="0.5"></div>
+            <div class="ctl" id="c-rh"><label for="s-rh" id="lbl-rh">Half-light r½<small>r band</small></label><output id="o-rh"></output><input type="range" id="s-rh" min="6" max="60" step="0.5"></div>
             <div class="ctl" id="c-inc"><label for="s-inc">Inclination<small>i</small></label><output id="o-inc"></output><input type="range" id="s-inc" min="0" max="80" step="1"></div>
             <div class="ctl" id="c-pa"><label for="s-pa">Orientation<small>θ</small></label><output id="o-pa"></output><input type="range" id="s-pa" min="0" max="179" step="1"></div>
             <div class="ctl" id="c-rin"><label for="s-rin">ISCO<small>r_in</small></label><output id="o-rin"></output><input type="range" id="s-rin" min="1.25" max="8.95" step="0.05"></div>
-            <div class="ctl" id="c-gr"><label>GR effects<small>approaching side</small></label><output id="o-gr"></output>
+            <div class="ctl" id="c-beta"><label for="s-beta">Slope β<small>T ∝ r^−β</small></label><output id="o-beta"></output><input type="range" id="s-beta" min="0.3" max="1.5" step="0.01"></div>
+            <div class="ctl" id="c-gr"><label>GR side<small>approaching</small></label><output id="o-gr"></output>
               <div class="seg" role="group" aria-label="GR effects">
                 <button id="g0" data-g="0" aria-pressed="true">Off</button>
-                <button id="g1" data-g="1" aria-pressed="false">At θ</button>
-                <button id="g2" data-g="-1" aria-pressed="false">At θ+180°</button>
+                <button id="g1" data-g="1" aria-pressed="false">θ</button>
+                <button id="g2" data-g="-1" aria-pressed="false">θ+180°</button>
               </div>
             </div>
           </div>
           <div class="previews">
-            <div class="pv"><div class="box"><canvas id="pvYou" width="128" height="128"></canvas></div><span>Yours</span></div>
-            <div class="pv"><div class="box"><canvas id="pvTrue" width="128" height="128"></canvas><div class="q" id="pvQ">?</div></div><span>Truth</span></div>
+            <div class="pv"><div class="box"><canvas id="pvYou" width="128" height="128"></canvas></div><span>Model</span></div>
+            <div class="pv"><div class="box truthbox"><canvas id="pvTrue" width="128" height="128"></canvas><div class="q" id="pvQ">?</div></div><span><b>True</b></span></div>
           </div>
         </div>
         <div class="hint" id="hintBox" hidden><ol id="hintList"></ol></div>
@@ -276,7 +302,7 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
         </div>
         <div class="result" id="result" hidden>
           <div class="score" id="score">0<small id="rating"></small></div>
-          <div class="tbl"><table><thead><tr><th>Parameter</th><th>Yours</th><th>Truth</th><th>Match</th><th>Data constraint</th></tr></thead><tbody id="rtab"></tbody></table></div>
+          <div class="tbl"><table><thead><tr><th>Parameter</th><th>Model</th><th>True</th><th>Match</th><th>Data constraint</th></tr></thead><tbody id="rtab"></tbody></table></div>
           <div class="share" id="shareBox" hidden><code id="shareTxt"></code><button class="btn ghost" id="copyBtn">Copy</button></div>
         </div>
       </section>
@@ -357,32 +383,33 @@ function rayTask(lens,stars,t,c1,c2,Lw,N,rpp,id){
 /* ---------- disk model ---------- */
 function iscoOf(a){const Z1=1+Math.cbrt(1-a*a)*(Math.cbrt(1+a)+Math.cbrt(1-a)),Z2=Math.sqrt(3*a*a+Z1*Z1);return 3+Z2-Math.sign(a)*Math.sqrt((3-Z1)*(3+Z1+2*Z2));}
 function spinFromIsco(r){let lo=-0.998,hi=0.998;for(let i=0;i<50;i++){const m=(lo+hi)/2;if(iscoOf(m)>r)lo=m;else hi=m;}return (lo+hi)/2;}
-function xiOf(r,rin,rs){return Math.pow(r/rs,0.75)*Math.pow(1-Math.sqrt(rin/r),-0.25);}
-function radii(rin,rs){
-  const n=500,lt=Math.log((rin+150*rs)/rin),cum=new Float64Array(n+1);let tot=0;
-  for(let k=1;k<=n;k++){const r=rin*Math.exp((k-0.5)/n*lt);tot+=r*r/Math.expm1(xiOf(r,rin,rs));cum[k]=tot;}
+function xiOf(r,rin,rs,be){return Math.pow(r/rs,be)*Math.pow(1-Math.sqrt(rin/r),-0.25);} // T ∝ r^-β (β = 3/4 for a standard thin disk)
+function radii(rin,rs,be){
+  const n=500,lt=Math.log((rin+Math.pow(60,1/be)*rs)/rin),cum=new Float64Array(n+1);let tot=0;
+  for(let k=1;k<=n;k++){const r=rin*Math.exp((k-0.5)/n*lt);tot+=r*r/Math.expm1(xiOf(r,rin,rs,be));cum[k]=tot;}
   const at=f=>{const T=f*tot;let k=1;while(k<n&&cum[k]<T)k++;const fr=(T-cum[k-1])/((cum[k]-cum[k-1])||1);return rin*Math.exp((k-1+fr)/n*lt);};
   return {rh:at(0.5),r99:at(0.99)};
 }
 const solveCache=new Map();
-function solveDisk(rin,rh){
-  const key=rin.toFixed(3)+"|"+rh.toFixed(3);if(solveCache.has(key))return solveCache.get(key);
-  let lo=Math.log(0.02),hi=Math.log(200);
-  for(let i=0;i<40;i++){const m=(lo+hi)/2;if(radii(rin,Math.exp(m)).rh<rh)lo=m;else hi=m;}
-  const rs=Math.exp((lo+hi)/2),rr=radii(rin,rs),out={rs,r99:rr.r99,rhAct:rr.rh};solveCache.set(key,out);return out;
+function solveDisk(rin,rh,be){
+  be=be||0.75;const key=rin.toFixed(3)+"|"+rh.toFixed(3)+"|"+be.toFixed(3);if(solveCache.has(key))return solveCache.get(key);
+  let lo=Math.log(1e-4),hi=Math.log(400);
+  for(let i=0;i<46;i++){const m=(lo+hi)/2;if(radii(rin,Math.exp(m),be).rh<rh)lo=m;else hi=m;}
+  const rs=Math.exp((lo+hi)/2),rr=radii(rin,rs,be),out={rs,r99:rr.r99,rhAct:rr.rh};solveCache.set(key,out);return out;
 }
-function prep(p){const s=solveDisk(p.rin,p.rh),inc=p.inc*D2R,pa=p.pa*D2R;
-  return {rs:s.rs,r99:s.r99,rin:p.rin,ci:Math.cos(inc),si:Math.sin(inc),cp:Math.cos(pa),sp:Math.sin(pa),gr:p.gr,a:p.gr?spinFromIsco(p.rin):0};}
+function prep(p,L){const s=solveDisk(p.rin,p.rh,p.beta),inc=p.inc*D2R,pa=p.pa*D2R,be=p.beta||0.75;
+  let rs=s.rs,r99=s.r99;if(L&&L!==1){rs=s.rs*Math.pow(L,1/be);r99=radii(p.rin,rs,be).r99;}
+  return {rs,r99,be:p.beta||0.75,rin:p.rin,ci:Math.cos(inc),si:Math.sin(inc),cp:Math.cos(pa),sp:Math.sin(pa),gr:p.gr,a:p.gr?spinFromIsco(p.rin):0};}
 function inten(xs,ys,q){
   const x=xs*q.cp+ys*q.sp,y=(-xs*q.sp+ys*q.cp)/q.ci,r=Math.sqrt(x*x+y*y);
   if(r<=q.rin||r>q.r99)return 0;
-  const xi=xiOf(r,q.rin,q.rs);if(!q.gr)return 1/Math.expm1(xi);
+  const xi=xiOf(r,q.rin,q.rs,q.be);if(!q.gr)return 1/Math.expm1(xi);
   const sr=Math.sqrt(r),r15=r*sr,den=r15-3*sr+2*q.a;if(den<=0)return 0;
   const ut=(r15+q.a)/(Math.pow(r,0.75)*Math.sqrt(den)),Om=1/(r15+q.a),g=1/(ut*(1-q.gr*Om*q.si*x));
   return g*g*g/Math.expm1(xi/g);
 }
-function buildKernel(p){
-  const q=prep(p),R=Math.min(KMAX,Math.ceil(q.r99*PXPERRG)+1),S=R<25?4:R<55?2:1,W=2*R+1,tmp=new Float64Array(W*W);let mx=0;
+function buildKernel(p,L){
+  const q=prep(p,L),R=Math.min(KMAX,Math.ceil(q.r99*PXPERRG)+1),S=R<25?4:R<55?2:1,W=2*R+1,tmp=new Float64Array(W*W);let mx=0;
   for(let oy=-R;oy<=R;oy++)for(let ox=-R;ox<=R;ox++){let s=0;
     for(let a=0;a<S;a++)for(let b=0;b<S;b++)s+=inten((ox+(a+0.5)/S-0.5)/PXPERRG,(oy+(b+0.5)/S-0.5)/PXPERRG,q);
     tmp[(oy+R)*W+ox+R]=s;if(s>mx)mx=s;}
@@ -394,9 +421,15 @@ function buildKernel(p){
 /* ---------- game state ---------- */
 let ev=null,truth=null,data=null,revealed=false,busy=false;
 let player={rh:25,inc:0,pa:90,rin:6,gr:0};
-let pCurve=null,tCurve=null,pFit=null,tFit=null,tNow=0,playing=false;
-const opts={isco:false,geom:false,gr:false};
-function freeList(){return ["rh",...(opts.geom?["inc","pa"]:[]),...(opts.isco?["rin"]:[]),...(opts.gr?["gr"]:[])];}
+let pCurve=null,tCurve=null,pCurves=null,tCurves=null,pFit=null,tFit=null,tNow=0,playing=false;
+const opts={isco:false,geom:false,gr:false,beta:false,nb:"1"};
+/* photometric bands (effective wavelength, μm); the disk scale radius grows as λ^(1/β); r is the reference band */
+const BANDS={u:{l:0.367,v:"--bu",nf:1.5},g:{l:0.482,v:"--bg_",nf:1.0},r:{l:0.622,v:"--br",nf:1.0},i:{l:0.755,v:"--bi",nf:1.1},z:{l:0.869,v:"--bz",nf:1.3},y:{l:0.971,v:"--by",nf:1.6}}; // Rubin LSST ugrizy
+const BANDSETS={"1":["r"],"3":["g","r","i"],"6":["u","g","r","i","z","y"]};
+function bandList(){return BANDSETS[opts.nb]||["r"];}
+const lr=b=>BANDS[b]?BANDS[b].l/BANDS.r.l:1;
+let viewSet=new Set(["r"]),hideB=new Set();   // bands shown on the map (any combination)
+function freeList(){return ["rh",...(opts.geom?["inc","pa"]:[]),...(opts.isco?["rin"]:[]),...(opts.gr?["gr"]:[]),...(opts.beta?["beta"]:[])];}
 function fixedVals(){return {};} // parameters not being fit are still drawn per event and given to the player
 const FREE=new Proxy({},{get:()=>freeList()});
 
@@ -437,8 +470,8 @@ async function buildEvent(seed,lens,onProg){
   for(let k=0;k<NS;k++){const t=k*100/(NS-1),{f0,fr}=frameAt(t),o0=offsetIn(f0,t),o1=offsetIn(f0+1,t);
     ev.f0[k]=f0;ev.fr[k]=fr;ev.b0[k]=C+Math.round(o0.y)*NW+Math.round(o0.x);ev.b1[k]=C+Math.round(o1.y)*NW+Math.round(o1.x);}
 }
-function curveOf(p){
-  const K=buildKernel(p),out=new Float64Array(NS),off=K.off,w=K.w,m=off.length;
+function curveOf(p,b){
+  const K=buildKernel(p,b?lr(b):1),out=new Float64Array(NS),off=K.off,w=K.w,m=off.length;
   for(let k=0;k<NS;k++){const A=ev.frames[ev.f0[k]],B=ev.frames[ev.f0[k]+1],b0=ev.b0[k],b1=ev.b1[k],fr=ev.fr[k];let s0=0,s1=0;
     for(let j=0;j<m;j++)s0+=w[j]*A[b0+off[j]];
     if(fr>1e-6)for(let j=0;j<m;j++)s1+=w[j]*B[b1+off[j]];
@@ -446,24 +479,36 @@ function curveOf(p){
   return out;
 }
 function interp(c,t){const x=t/100*(c.length-1),i=Math.min(c.length-2,Math.floor(x)),f=x-i;return c[i]*(1-f)+c[i+1]*f;}
-function fit(c){let s=0;const r=data.t.map((t,k)=>data.m[k]-interp(c,t));for(const v of r)s+=v;const off=s/r.length;
-  let chi=0;for(const v of r)chi+=((v-off)/data.sig)**2;return {off,chi2nu:chi/(r.length-freeList().length-1)};}
+function curvesOf(p){const o={};for(const b of bandList())o[b]=curveOf(p,b);return o;}
+// combined fit over all bands: each band gets its own magnitude zero point
+function fit(cs){let chi=0,N=0;const offs={};
+  for(const B of data.bands){const c=cs[B.b],r=B.t.map((t,k)=>B.m[k]-interp(c,t));const off=r.reduce((a,v)=>a+v,0)/r.length;offs[B.b]=off;
+    for(const v of r)chi+=((v-off)/B.sig)**2;N+=r.length;}
+  return {off:offs.r,offs,chi2nu:chi/Math.max(1,N-freeList().length-data.bands.length)};}
 function randTruth(rng){
   const lu=(a,b)=>Math.exp(Math.log(a)+rng()*(Math.log(b)-Math.log(a)));
   const rin=Math.round((1.3+rng()*7.2)*20)/20,t={rh:Math.max(lu(8,35),2.5*rin),inc:Math.round(15+rng()*60),pa:Math.round(rng()*179),rin,gr:rng()<0.5?1:-1};
+  t.beta=Math.round((0.4+rng()*0.9)*100)/100;t.zq=Math.round((0.5+rng()*2.5)*100)/100;
   const fx=fixedVals(),fr=freeList();for(const k in fx)if(!fr.includes(k))t[k]=fx[k];t.rh=Math.max(t.rh,2.5*t.rin);return t;
 }
 /* each event draws its own monitoring campaign: cadence and photometric errors */
 /* chosen difficulty sets the campaign; Random mixes all three */
 let level="1",sel=new Set(["1"]),custom=false,auto=true;   // level = this event's level; sel = levels the player picked
 /* Easy/Medium/Hard are presets for both the data and the parameters you fit; Custom = your own fit choices; Easy/Medium/Hard can be combined */
-const PRESET={"1":{geom:false,isco:false,gr:false},"2":{geom:true,isco:false,gr:false},"3":{geom:true,isco:true,gr:true}};
+const PRESET={"1":{geom:false,isco:false,gr:false,beta:false,nb:"1"},"2":{geom:false,isco:false,gr:false,beta:false,nb:"1"},"3":{geom:false,isco:false,gr:false,beta:false,nb:"1"},"4":{geom:true,isco:true,gr:true,beta:true,nb:"6"}};
+/* difficulty = how many extra parameters you fit; which ones is drawn at random for each event */
+const NEXTRA={"1":0,"2":1,"3":2,"4":4},GROUPS=["geom","isco","gr","beta"];
+function presetFor(l,rng){const o={geom:false,isco:false,gr:false,beta:false,nb:"1"},g=[...GROUPS];
+  for(let i=g.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[g[i],g[j]]=[g[j],g[i]];}
+  for(const k of g.slice(0,NEXTRA[l]))o[k]=true;
+  o.nb=l==="4"?"6":o.beta?"3":"1";return o;}
 const LEVELS={
   "1":{name:"Easy",camp:1,lo:0.01,hi:0.015,dt:1,tag:"Crayons allowed. Just find the size.",fit:"Fit r½ · nightly data, 1–1.5% errors"},
-  "2":{name:"Medium",camp:2,lo:0.015,hi:0.022,dt:2,tag:"Clouds, and a tilted disk. Welcome to 3D.",fit:"Fit r½, i, θ · weather losses, 1.5–2.2% errors"},
-  "3":{name:"Hard",camp:3,lo:0.022,hi:0.03,dt:3,tag:"Everything, sparse and noisy. Reviewer 2 is watching.",fit:"Fit r½, i, θ, ISCO, GR · sparse with a gap, 2.2–3% errors"},
+  "2":{name:"Medium",camp:2,lo:0.015,hi:0.022,dt:2,tag:"One mystery parameter joins the size. Check the Parameters row.",fit:"Fit r½ + 1 random extra (i θ, ISCO, GR or slope) · weather losses, 1.5–2.2% errors"},
+  "3":{name:"Hard",camp:3,lo:0.022,hi:0.03,dt:3,tag:"Two mystery parameters, sparse and noisy. Reviewer 2 is watching.",fit:"Fit r½ + 2 random extras · sparse with a gap, 2.2–3% errors"},
+  "4":{name:"Extreme",camp:3,lo:0.026,hi:0.035,dt:3,tag:"Everything, plus the temperature slope. Abandon all priors.",fit:"Fit r½, i, θ, ISCO, GR, slope · 6 bands (ugrizy) · sparse with a gap, 2.6–3.5% errors"},
   any:{name:"Custom",tag:"Your rules. Pick the parameters below.",fit:"Your choice of parameters · random data"}};
-const LVNAMES=["","Easy","Medium","Hard"];
+const LVNAMES=["","Easy","Medium","Hard","Extreme"];
 function makeData(rng){
   const P=LEVELS[level],L=P.camp||0,u=L===1?0:L===2?0.5:L===3?0.9:rng();
   const lo=P.lo??0.01,hi=P.hi??0.03;
@@ -471,7 +516,14 @@ function makeData(rng){
   if(u<0.35){cad="nightly";for(let d=0;d<100;d++)t.push(d+0.5+(rng()-0.5)*0.6);}
   else if(u<0.7){cad="weather losses";for(let d=0;d<100;d++)if(rng()<0.7)t.push(d+0.5+(rng()-0.5)*0.6);}
   else{cad="every other night, season gap";const g=25+rng()*40;for(let d=0;d<100;d+=2)if(rng()<0.65&&(d<g||d>g+20))t.push(d+1+(rng()-0.5));}
-  return {t,m:t.map(x=>interp(tCurve,x)+sig*gauss(rng)),sig,cad};
+  const bl=bandList();
+  if(bl.length===1){const m=t.map(x=>interp(tCurves.r,x)+sig*gauss(rng));return {t,m,sig,cad,bands:[{b:"r",t,m,sig}]};}
+  // Rubin-like: each night observes a few of the bands (2 of 3, or 3 of 6)
+  const per={};for(const b of bl)per[b]=[];
+  for(const x of t){const pick=[...bl].sort(()=>rng()-0.5).slice(0,bl.length>=6?3:2);for(const b of pick)per[b].push(x+(rng()-0.5)*0.1);}
+  const bands=bl.map(b=>{const tb=per[b].sort((p,q)=>p-q),sb=Math.round(sig*BANDS[b].nf*1000)/1000;return {b,t:tb,m:tb.map(x=>interp(tCurves[b],x)+sb*gauss(rng)),sig:sb};});
+  const R=bands.find(B=>B.b==="r");
+  return {t:R.t,m:R.m,sig:R.sig,cad:cad+` · ${bl.length} bands`,bands,nTot:bands.reduce((a,B)=>a+B.t.length,0)};
 }
 
 /* ---------- map colouring ---------- */
@@ -500,53 +552,56 @@ const fmtMu=v=>v<10?v.toFixed(1):v.toFixed(0);
 
 async function newGame(seedIn){
   if(busy)return;busy=true;stop();clearTimed();
-  $("newBtn").disabled=true;$("revealBtn").disabled=true;$("loading").hidden=false;$("loadBar").style.width="0%";
+  $("revealBtn").disabled=true;$("loading").hidden=false;$("loadBar").style.width="0%";
   const seed=(typeof seedIn==="number"?seedIn:null)??(playMode==="daily"?dailySeed():(Math.random()*2**31)|0),rng=mulberry32(seed),lens=randLens(rng);curSeed=seed;
   $("loadTxt").textContent=`Ray-shooting ${NF} frames of the moving star field…`;
   try{await buildEvent(seed,lens,f=>{$("loadBar").style.width=(f*100).toFixed(0)+"%";if(Math.round(f*NF)%8===1)$("loadTxt").textContent=pick(LOADQUIPS)+` (${Math.round(f*NF)}/${NF})`;});}
-  catch(e){$("loadTxt").textContent="Ray shooting failed. Press New event to try again.";busy=false;$("newBtn").disabled=false;return;}
+  catch(e){$("loadTxt").textContent="Ray shooting failed. Press New event to try again.";busy=false;$("revealBtn").disabled=false;$("revealBtn").textContent="New event";return;}
   paintFrames();
   $("mapMeta").textContent=`κ ${lens.kt.toFixed(2)} · κ*/κ ${lens.fs.toFixed(2)} · γ ${lens.g.toFixed(2)} · ${ev.ns} stars`;
   $("lensTxt").title=$("lensTxt").textContent=`${lens.k<0.15?"sparse caustics":lens.k<0.3?"moderate caustic network":"dense caustic network"}${1-lens.kt-lens.g<0?" · saddle-point image":""} · source ${lens.len.toFixed(2)} R_E / 100 d · stars ${(lens.sig*400).toFixed(1)} r_g/d`;
-  $("loading").hidden=true;$("newBtn").disabled=false;busy=false;
+  $("loading").hidden=true;busy=false;
   newDisk(playMode==="daily"?diskRng():rng);
   if(playMode==="timed")startRound();
   updateModebar();
 }
 /* measured difficulty: nudge each fitted parameter and see how much χ² changes (zero point refit) */
 const NUDGE={rh:t=>({...t,rh:t.rh*1.15}),inc:t=>({...t,inc:t.inc>45?t.inc-10:t.inc+10}),pa:t=>({...t,pa:(t.pa+12)%180}),
-  rin:t=>({...t,rin:t.rin>5?t.rin-1.2:t.rin+1.2}),gr:t=>({...t,gr:-t.gr})};
+  rin:t=>({...t,rin:t.rin>5?t.rin-1.2:t.rin+1.2}),gr:t=>({...t,gr:-t.gr}),beta:t=>({...t,beta:t.beta>0.85?t.beta-0.15:t.beta+0.15})};
 let evRate=null;
 function rateEvent(){
   const per={};let tot=0,n=0;
-  for(const k of freeList()){const c=curveOf(NUDGE[k](truth)),d=data.t.map(t=>interp(c,t)-interp(tCurve,t));
-    const m=d.reduce((a,b)=>a+b,0)/d.length;let x=0;for(const v of d)x+=((v-m)/data.sig)**2;per[k]=x;tot+=x<25?3:x<150?2:1;n++;}
-  return {per,dLev:Math.max(1,Math.min(3,Math.round(tot/n))),stars:Math.max(1,Math.min(3,Math.round(0.5*tot/n+fitWeight()))),impossible:Object.values(per).every(x=>x<4)};
+  for(const k of freeList()){const nt=NUDGE[k](truth);let x=0;
+    for(const B of (k==="beta"?data.bands:data.bands.filter(B=>B.b==="r"))){const c=curveOf(nt,B.b),d=B.t.map(t=>interp(c,t)-interp(tCurves[B.b],t));
+      const m=d.reduce((a,v)=>a+v,0)/d.length;for(const v of d)x+=((v-m)/B.sig)**2;}
+    per[k]=x;tot+=x<25?3:x<150?2:1;n++;}
+  return {per,dLev:Math.max(1,Math.min(3,Math.round(tot/n))),stars:Math.max(1,Math.min(4,Math.round(0.5*tot/n+fitWeight()))),impossible:Object.values(per).every(x=>x<4)};
 }
 /* fitting more of the disk is harder: raise the rating and the points */
-function fitWeight(){return 0.5+(opts.geom?1.0:0)+(opts.isco?0.7:0)+(opts.gr?0.5:0);} // r½ alone stays ★–★★; each extra parameter pushes up
-function pointMult(){return (1+(opts.geom?1.0:0)+(opts.isco?0.8:0)+(opts.gr?0.6:0))*(1+0.25*((evRate?evRate.stars:1)-1));
+function fitWeight(){return 0.5+(opts.geom?1.0:0)+(opts.isco?0.7:0)+(opts.gr?0.5:0)+(opts.beta?0.6:0);} // r½ alone stays ★–★★; each extra parameter pushes up
+function pointMult(){return (1+(opts.geom?0.3:0)+(opts.isco?0.3:0)+(opts.gr?0.2:0)+(opts.beta?0.3:0))*(1+0.15*((evRate?evRate.stars:1)-1))*({"1":1,"3":1.1,"6":1.2}[opts.nb]||1);
 }
 function newDisk(rng){
   stop();
   if(custom)level="any";
-  else{const arr=[...sel].sort();level=arr[Math.floor(rng()*arr.length)];Object.assign(opts,PRESET[level]);syncFitButtons();}
+  else{const arr=[...sel].sort();level=arr[Math.floor(rng()*arr.length)];Object.assign(opts,presetFor(level,rng));syncFitButtons();}
   syncLevelButtons();
   // redraw disk and data until the event is solvable and, if a level is chosen, its data constraint matches it
   let best=null;
-  for(let tries=0;tries<14;tries++){truth=randTruth(rng);tCurve=curveOf(truth);data=makeData(rng);evRate=rateEvent();
-    if(evRate.impossible&&tries<13)continue;
+  const maxTries=bandList().length>1?8:14;
+  for(let tries=0;tries<maxTries;tries++){truth=randTruth(rng);tCurves=curvesOf(truth);tCurve=tCurves.r;data=makeData(rng);evRate=rateEvent();
+    if(evRate.impossible&&tries<maxTries-1)continue;
     const miss=level==="any"?0:Math.abs(evRate.dLev-LEVELS[level].dt);
-    if(!best||miss<best.miss)best={miss,truth,tCurve,data,evRate};
+    if(!best||miss<best.miss)best={miss,truth,tCurve,tCurves,data,evRate};
     if(miss===0)break;}
-  ({truth,tCurve,data,evRate}=best);if(level!=="any")evRate.stars=+level;
-  tFit=fit(tCurve);spikes=findSpikes();
-  $("evRate").innerHTML=`<span class="badge e${evRate.stars}" title="Overall rating: how informative the data are, plus the extra parameters you are fitting"><span class="stars">${"★".repeat(evRate.stars)}<i>${"★".repeat(3-evRate.stars)}</i></span>${LVNAMES[level==="any"?evRate.stars:+level]}</span><span class="pmult" title="Points earned = score × this. Grows with each extra parameter you fit and with the event's stars.">×${pointMult().toFixed(2)} pts</span>`;
-  $("campaign").textContent=`${level==="any"?["","Easy","Medium","Hard"][evRate.dLev]+" data · ":""}${data.t.length} epochs · ${data.cad} · ${(data.sig*100).toFixed(1)}% errors`;
-  revealed=false;hints=[];$("hintList").innerHTML="";$("hintBox").hidden=true;$("hintBtn").disabled=false;$("result").hidden=true;$("truthLeg").hidden=true;$("pvQ").hidden=false;$("pvTrue").getContext("2d").clearRect(0,0,128,128);
-  player={rh:25,inc:40,pa:90,rin:6,gr:0};{const fr=freeList();for(const k of ["rin","inc","pa","gr"])if(!fr.includes(k))player[k]=truth[k];}
+  ({truth,tCurve,tCurves,data,evRate}=best);if(level!=="any")evRate.stars=+level;
+  tFit=fit(tCurves);spikes=data.bands.length>1?[]:findSpikes();syncBandUI();
+  $("evRate").innerHTML=`<span class="badge e${evRate.stars}" title="Overall rating: how informative the data are, plus the extra parameters you are fitting"><span class="stars">${"★".repeat(evRate.stars)}<i>${"★".repeat(4-evRate.stars)}</i></span>${LVNAMES[level==="any"?evRate.stars:+level]}</span><span class="pmult" title="Points earned = score × this. Grows with each extra parameter you fit and with the event's stars.">×${pointMult().toFixed(2)} pts</span>`;
+  $("campaign").textContent=`${level==="any"?["","Easy","Medium","Hard"][evRate.dLev]+" data · ":""}z ${truth.zq.toFixed(2)} · ${data.nTot||data.t.length} points · ${data.cad} · ${(data.sig*100).toFixed(1)}% errors`;
+  revealed=false;hints=[];$("hintList").innerHTML="";$("hintBox").hidden=true;$("hintBtn").disabled=false;$("result").hidden=true;$("truthLeg").hidden=true;$("truthLegM").hidden=true;$("pvQ").hidden=false;$("pvTrue").getContext("2d").clearRect(0,0,128,128);
+  player={rh:25,inc:40,pa:90,rin:6,gr:0,beta:0.75};{const fr=freeList();for(const k of ["rin","inc","pa","gr","beta"])if(!fr.includes(k))player[k]=truth[k];}
   syncControls();tNow=0;$("tday").value=0;$("dayLbl").textContent="day 0.0";
-  $("revealBtn").disabled=false;showBest();updateModel();
+  syncMainBtn();showBest();updateModel();
 }
 
 /* ---------- drawing ---------- */
@@ -562,25 +617,63 @@ function themeColours(){MODELC=rgbOf("--model");TRUTHC=rgbOf("--truth");for(cons
 function diskRGB(role,a){const c=role==="truth"?TRUTHC:MODELC;
   if(a<0.55){const f=a/0.55;return c.map(v=>v*(0.35+0.65*f));}
   const f=(a-0.55)/0.45;return c.map(v=>v+(255-v)*f*f);}
+/* paint a disk image into RGBA arrays. Single band: theme colour ramp (yours) or rose (truth).
+   Multi-band "all": additive composite, each band in its own colour, so the hot blue centre and redder outskirts show. */
+function diskBands(){const v=bandList().filter(b=>viewSet.has(b));return v.length?v:["r"];}
+function refBand(){const v=diskBands();return v.length===1?v[0]:"r";}
+function diskLayers(p,role){
+  const multi=bandList().length>1;
+  if(role==="truth"||!multi)return [{q:prep(p,lr(refBand())),col:null}];
+  return diskBands().map(b=>({q:prep(p,lr(b)),col:rgbOf(BANDS[b].v)}));
+}
+function paintDisk(p,role,S,R,bg){
+  const L=diskLayers(p,role),n=S*S,F=L.map(()=>new Float64Array(n)),mx=L.map(()=>0);
+  for(let j=0;j<S;j++)for(let i=0;i<S;i++){const x=((i+0.5)/S-0.5)*2*R,y=((j+0.5)/S-0.5)*2*R;
+    for(let b=0;b<L.length;b++){const u=inten(x,y,L[b].q);F[b][j*S+i]=u;if(u>mx[b])mx[b]=u;}}
+  // per-unit-flux weights: compact (blue) bands dominate the centre, extended (red) bands the outskirts
+  // colour = flux-weighted mean wavelength at each pixel (per unit band flux), stretched across the band palette
+  const TOT=F.map(f=>{let t=0;for(const v of f)t+=v;return t||1;}),LE=new Float32Array(n);let lmin=Infinity,lmax=-Infinity,PAL=null;
+  if(L.length>1){const bl=diskBands(),lam=bl.map(b=>BANDS[b].l);
+    for(let k=0;k<n;k++){let W=0,S=0,pk=0;for(let b=0;b<L.length;b++){const w=F[b][k]/TOT[b];W+=w;S+=w*lam[b];pk=Math.max(pk,F[b][k]/(mx[b]||1));}
+      LE[k]=W>0?S/W:lam[0];if(pk>0.02){lmin=Math.min(lmin,LE[k]);lmax=Math.max(lmax,LE[k]);}}
+    PAL=Array.from({length:256},(_,i)=>{const x=i/255*(L.length-1),a0=Math.floor(x),a1=Math.min(L.length-1,a0+1),f=x-a0;return L[a0].col.map((v,q)=>v+(L[a1].col[q]-v)*f);});}
+  const out=new Uint8ClampedArray(n*4),rl=role==="truth"?"truth":"model";
+  for(let k=0;k<n;k++){let c,a;
+    if(!L[0].col){a=Math.sqrt(F[0][k]/(mx[0]||1));c=diskRGB(rl,a);}
+    else if(L.length===1){a=Math.sqrt(F[0][k]/(mx[0]||1));const t=L[0].col;c=a<0.55?t.map(v=>v*(0.35+0.65*a/0.55)):t.map(v=>v+(255-v)*((a-0.55)/0.45)**2);}
+    else{c=PAL[Math.max(0,Math.min(255,Math.round((LE[k]-lmin)/(lmax-lmin||1)*255)))];
+      a=0;for(let b=0;b<L.length;b++)a=Math.max(a,Math.sqrt(F[b][k]/(mx[b]||1)));a*=0.9;
+      c=c.map(v=>v*(0.35+0.65*Math.min(1,a/0.6))+(255-v)*Math.max(0,(a-0.8)/0.2)**2*0.5);}
+    if(bg){for(let q=0;q<3;q++)out[k*4+q]=bg[q]+(c[q]-bg[q])*Math.min(1,a*0.95);out[k*4+3]=255;}
+    else{out[k*4]=c[0];out[k*4+1]=c[1];out[k*4+2]=c[2];out[k*4+3]=Math.min(255,a*240);}}
+  return out;
+}
 function diskSprite(p,role,scale){
-  const key=[p.rh,p.inc,p.pa,p.rin,p.gr,Math.round(scale*4),MODELC.join(),TRUTHC.join()].join("|");
+  const key=[diskBands().join(""),bandList().join(""),p.rh,p.inc,p.pa,p.rin,p.gr,p.beta,Math.round(scale*4),MODELC.join(),TRUTHC.join()].join("|");
   const hit=spriteCache[role];if(hit&&hit.key===key)return hit;
-  const q=prep(p),Rrg=Math.min(q.r99,KMAX/PXPERRG),S=Math.max(16,Math.min(400,Math.ceil(2*Rrg*PXPERRG*scale)));
-  const cv=document.createElement("canvas");cv.width=cv.height=S;const ctx=cv.getContext("2d"),im=ctx.createImageData(S,S),v=new Float64Array(S*S);let mx=0;
-  for(let j=0;j<S;j++)for(let i=0;i<S;i++){const x=((i+0.5)/S-0.5)*2*Rrg,y=((j+0.5)/S-0.5)*2*Rrg,u=inten(x,y,q);v[j*S+i]=u;if(u>mx)mx=u;}
-  const rl=role==="truth"?"truth":"model";
-  for(let k=0;k<S*S;k++){const a=Math.sqrt(v[k]/(mx||1)),c=diskRGB(rl,a);im.data[k*4]=c[0];im.data[k*4+1]=c[1];im.data[k*4+2]=c[2];im.data[k*4+3]=Math.min(255,a*240);}
-  ctx.putImageData(im,0,0);
+  const r99=Math.max(...diskLayers(p,role).map(l=>l.q.r99)),Rrg=Math.min(r99,KMAX/PXPERRG),S=Math.max(16,Math.min(400,Math.ceil(2*Rrg*PXPERRG*scale)));
+  const cv=document.createElement("canvas");cv.width=cv.height=S;const ctx=cv.getContext("2d"),im=ctx.createImageData(S,S);
+  im.data.set(paintDisk(p,role,S,Rrg,null));ctx.putImageData(im,0,0);
   const out={key,cv,size:2*Rrg*PXPERRG};spriteCache[role]=out;return out;
 }
 function drawDisk(ctx,p,cx,cy,k,role,alpha){
   const sp=diskSprite(p,role,k),w=sp.size*k;ctx.save();ctx.globalAlpha=alpha;ctx.imageSmoothingEnabled=true;
   ctx.drawImage(sp.cv,cx-w/2,cy-w/2,w,w);ctx.restore();
 }
-function drawEllipse(ctx,p,x,y,k,col,dash){
-  const a=p.rh*PXPERRG*k,b=a*Math.cos(p.inc*D2R),ra=p.rin*PXPERRG*k;
-  ctx.save();ctx.strokeStyle=col;ctx.lineWidth=1.6*(window.devicePixelRatio||1);ctx.setLineDash(dash||[]);
-  ctx.beginPath();ctx.ellipse(x,y,Math.max(a,1),Math.max(b,1),p.pa*D2R,0,Math.PI*2);ctx.stroke();
+function rhIn(p,b){if(!b||b==="r")return p.rh;const q=prep(p,lr(b));return radii(p.rin,q.rs,q.be).rh;}
+function outlineSpecs(p,role){
+  if(role==="truth"||bandList().length<=1)return [{rh:rhIn(p,refBand()),col:css(role==="truth"?"--truth":"--model")}];
+  return diskBands().map(b=>({rh:rhIn(p,b),col:css(BANDS[b].v)}));
+}
+function drawEllipse(ctx,p,x,y,k,col,dash,role){
+  const specs=outlineSpecs(p,role||(col===css("--truth")?"truth":"model"));col=specs[specs.length-1].col;
+  ctx.save();ctx.lineWidth=1.6*(window.devicePixelRatio||1);ctx.setLineDash(dash||[]);
+  for(const sp of specs){const a1=sp.rh*PXPERRG*k;ctx.strokeStyle=sp.col;ctx.beginPath();ctx.ellipse(x,y,Math.max(a1,1),Math.max(a1*Math.cos(p.inc*D2R),1),p.pa*D2R,0,Math.PI*2);ctx.stroke();}
+  ctx.restore();
+  const a=specs[specs.length-1].rh*PXPERRG*k;
+  ctx.strokeStyle=specs.length>1?css("--fg"):col;
+  const ra=p.rin*PXPERRG*k;
+  ctx.save();ctx.lineWidth=1.6*(window.devicePixelRatio||1);ctx.setLineDash(dash||[]);
   ctx.beginPath();ctx.ellipse(x,y,Math.max(ra,1),Math.max(ra*Math.cos(p.inc*D2R),1),p.pa*D2R,0,Math.PI*2);ctx.stroke();
   if(p.gr){ctx.fillStyle=col;ctx.beginPath();ctx.arc(x+p.gr*a*Math.cos(p.pa*D2R),y+p.gr*a*Math.sin(p.pa*D2R),3,0,Math.PI*2);ctx.fill();}
   ctx.restore();
@@ -611,6 +704,7 @@ function drawMap(){
 function drawLC(){
   const cv=$("lc"),{w,h,d}=sizeCanvas(cv),ctx=cv.getContext("2d");ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,w,h);
   if(!data)return;
+  if(data.bands.length>1)return drawLCMulti(cv,ctx,w,h,d);
   const ml=48*d,mr=12*d,mt=10*d,gap=14*d,rh=64*d,mb=26*d,ph=h-mt-mb-gap-rh;
   const mean=data.m.reduce((a,b)=>a+b,0)/data.m.length;
   let lo=Infinity,hi=-Infinity;for(const m of data.m){lo=Math.min(lo,m-mean);hi=Math.max(hi,m-mean);}
@@ -641,20 +735,51 @@ function drawLC(){
   if(pCurve){ctx.fillStyle=css("--model");for(let k=0;k<data.t.length;k++){const v=data.m[k]-interp(pCurve,data.t[k])-pFit.off;ctx.beginPath();ctx.arc(X(data.t[k]),Math.max(rt+2,Math.min(rt+rh-2,RY(-v))),1.8*d,0,Math.PI*2);ctx.fill();}}
   ctx.strokeStyle=css("--muted");ctx.lineWidth=d;ctx.beginPath();ctx.moveTo(X(tNow),mt);ctx.lineTo(X(tNow),rt+rh);ctx.stroke();
 }
+function drawLCMulti(cv,ctx,w,h,d){
+  const ml=48*d,mr=12*d,mt=10*d,gap=14*d,rh=64*d,mb=26*d,ph=h-mt-mb-gap-rh,X=t=>ml+(t/100)*(w-ml-mr);
+  const vis=data.bands.filter(B=>!hideB.has(B.b));
+  // stack bands blue (top) → red (bottom) with offsets based on the largest variation
+  const stats=data.bands.map(B=>{const mean=B.m.reduce((a,v)=>a+v,0)/B.m.length;let lo=Infinity,hi=-Infinity;for(const v of B.m){lo=Math.min(lo,v-mean);hi=Math.max(hi,v-mean);}return {mean,lo,hi};});
+  const ptp=Math.max(0.05,...stats.map(S=>S.hi-S.lo)),sep=ptp*0.75;
+  const order=vis.map(B=>data.bands.indexOf(B));
+  let lo=Infinity,hi=-Infinity;order.forEach((i,k)=>{lo=Math.min(lo,stats[i].lo+k*sep);hi=Math.max(hi,stats[i].hi+k*sep);});
+  if(!isFinite(lo)){lo=0;hi=1;}const pad=(hi-lo)*0.06+0.03;lo-=pad;hi+=pad;
+  const Y=v=>mt+((v-lo)/(hi-lo))*ph,grid=css("--line"),mut=css("--muted");
+  ctx.font=`${11*d}px "IBM Plex Mono",monospace`;ctx.fillStyle=mut;ctx.strokeStyle=grid;ctx.lineWidth=d;
+  ctx.textAlign="center";ctx.textBaseline="top";for(let t=0;t<=100;t+=20){ctx.beginPath();ctx.moveTo(X(t),mt);ctx.lineTo(X(t),mt+ph);ctx.stroke();ctx.fillText(t===100?"100 d":t,X(t)-(t===100?10*d:0),h-mb+8*d);}
+  // scale bar: 0.2 mag (or 0.1)
+  const sb=ptp>0.4?0.2:0.1,y0=mt+ph-6*d,y1=y0-(sb/(hi-lo))*ph;ctx.strokeStyle=mut;ctx.lineWidth=2*d;ctx.beginPath();ctx.moveTo(ml-10*d,y0);ctx.lineTo(ml-10*d,y1);ctx.stroke();
+  ctx.save();ctx.translate(ml-22*d,(y0+y1)/2);ctx.rotate(-Math.PI/2);ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(sb+" mag",0,0);ctx.restore();
+  ctx.save();ctx.beginPath();ctx.rect(ml,mt,w-ml-mr,ph);ctx.clip();
+  order.forEach((i,k)=>{const B=data.bands[i],S=stats[i],col=css(BANDS[B.b].v),o=k*sep;
+    ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=d;
+    for(let j=0;j<B.t.length;j++){const x=X(B.t[j]),y=Y(B.m[j]-S.mean+o),e=B.sig/(hi-lo)*ph;ctx.globalAlpha=.45;ctx.beginPath();ctx.moveTo(x,y-e);ctx.lineTo(x,y+e);ctx.stroke();ctx.globalAlpha=.9;ctx.beginPath();ctx.arc(x,y,2*d,0,Math.PI*2);ctx.fill();}
+    ctx.globalAlpha=1;
+    const line=(c,off,dash,lw,cc)=>{if(!c||off==null)return;ctx.save();ctx.strokeStyle=cc||col;ctx.lineWidth=lw*d;ctx.setLineDash(dash);ctx.beginPath();
+      for(let q=0;q<c.length;q++){const t=q/(c.length-1)*100,y=Y(c[q]+off-S.mean+o);q?ctx.lineTo(X(t),y):ctx.moveTo(X(t),y);}ctx.stroke();ctx.restore();};
+    if(revealed)line(tCurves[B.b],tFit.offs[B.b],[6*d,4*d],1.8,css("--truth"));
+    if(pCurves)line(pCurves[B.b],pFit.offs[B.b],[],2);
+    ctx.fillStyle=col;ctx.font=`600 ${12*d}px "IBM Plex Mono",monospace`;ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillText(B.b,w-mr-4*d,Y(S.lo+o)+2*d);});
+  ctx.restore();
+  const rt=mt+ph+gap,rr=Math.max(...data.bands.map(B=>4*B.sig),0.06),RY=v=>rt+rh/2-(v/rr)*(rh/2);
+  ctx.strokeStyle=grid;ctx.lineWidth=d;ctx.strokeRect(ml,rt,w-ml-mr,rh);ctx.beginPath();ctx.moveTo(ml,RY(0));ctx.lineTo(w-mr,RY(0));ctx.stroke();
+  ctx.fillStyle=mut;ctx.font=`${11*d}px "IBM Plex Mono",monospace`;ctx.textAlign="right";ctx.textBaseline="middle";ctx.fillText("resid",ml-6*d,rt+rh/2);
+  if(pCurves)for(const B of vis){if(!pCurves[B.b]||pFit.offs[B.b]==null)continue;ctx.fillStyle=css(BANDS[B.b].v);for(let j=0;j<B.t.length;j++){const v=B.m[j]-interp(pCurves[B.b],B.t[j])-pFit.offs[B.b];ctx.beginPath();ctx.arc(X(B.t[j]),Math.max(rt+2,Math.min(rt+rh-2,RY(-v))),1.6*d,0,Math.PI*2);ctx.fill();}}
+  ctx.strokeStyle=mut;ctx.lineWidth=d;ctx.beginPath();ctx.moveTo(X(tNow),mt);ctx.lineTo(X(tNow),rt+rh);ctx.stroke();
+}
 function niceStep(x){const p=10**Math.floor(Math.log10(x)),f=x/p;return (f<1.5?1:f<3.5?2:f<7.5?5:10)*p;}
 function renderDisk(cv,p,role){
-  const ctx=cv.getContext("2d"),W=cv.width,fov=75,im=ctx.createImageData(W,W),q=prep(p);let mx=0;const v=new Float64Array(W*W);
-  for(let j=0;j<W;j++)for(let i=0;i<W;i++){const s=inten((i+0.5-W/2)/W*2*fov,(j+0.5-W/2)/W*2*fov,q);v[j*W+i]=s;if(s>mx)mx=s;}
-  const bg=[5,6,12];
-  for(let k=0;k<W*W;k++){const a=Math.sqrt(v[k]/(mx||1)),col=diskRGB(role,a);for(let c=0;c<3;c++)im.data[k*4+c]=bg[c]+(col[c]-bg[c])*Math.min(1,a*0.95);im.data[k*4+3]=255;}
-  ctx.putImageData(im,0,0);
-  ctx.strokeStyle=css(role==="truth"?"--truth":"--model");ctx.lineWidth=1;ctx.setLineDash([2,3]);const a=p.rh*W/(2*fov);
-  ctx.beginPath();ctx.ellipse(W/2,W/2,a,Math.max(a*Math.cos(p.inc*D2R),.5),p.pa*D2R,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+  if(role==="truth"&&bandList().length>1)role="model";   // previews compare like with like: same bands, same colours
+  const ctx=cv.getContext("2d"),W=cv.width,fov=75,im=ctx.createImageData(W,W);
+  im.data.set(paintDisk(p,role,W,fov,[5,6,12]));ctx.putImageData(im,0,0);
+  ctx.lineWidth=1;ctx.setLineDash([2,3]);
+  for(const sp of outlineSpecs(p,role)){const a=sp.rh*W/(2*fov);ctx.strokeStyle=sp.col;ctx.beginPath();ctx.ellipse(W/2,W/2,a,Math.max(a*Math.cos(p.inc*D2R),.5),p.pa*D2R,0,Math.PI*2);ctx.stroke();}
+  ctx.setLineDash([]);
   ctx.fillStyle="rgba(233,230,221,.6)";ctx.font='10px "IBM Plex Mono",monospace';ctx.fillText("±"+fov+" r_g",6,W-7);
 }
 
 /* ---------- controls ---------- */
-const sliders=["rh","inc","pa","rin"];
+const sliders=["rh","inc","pa","rin","beta"];
 function syncControls(){
   const free=freeList();
   for(const k of [...sliders,"gr"]){const el=$("c-"+k),on=free.includes(k);el.classList.toggle("locked",!on);
@@ -663,24 +788,25 @@ function syncControls(){
   updateOutputs();
 }
 function updateOutputs(){
-  const s=solveDisk(player.rin,player.rh);
+  const s=solveDisk(player.rin,player.rh,player.beta);
   $("o-rh").textContent=`${s.rhAct.toFixed(1)} r_g`;$("o-rh").title=`${(s.rhAct*RG).toFixed(3)} R_E`;
+  $("lbl-rh").title=truth?`Measured in the observed r band (0.62 μm) = ${Math.round(BANDS.r.l*1e4/(1+truth.zq))} Å rest frame at z = ${truth.zq.toFixed(2)}. Other bands scale as λ^(1/β).`:"Measured in the observed r band (0.62 μm)";
   const fr=freeList();
   $("o-inc").textContent=fr.includes("inc")?player.inc.toFixed(0)+"°":`given ${player.inc}°`;
   $("o-pa").textContent=fr.includes("pa")?player.pa.toFixed(0)+"°":`given ${player.pa}°`;
+  $("o-beta").textContent=`${fr.includes("beta")?"":"given "}β ${(player.beta||0.75).toFixed(2)}`;$("o-beta").title="β = 0.75 is a standard thin disk; smaller β spreads the light outward";
   $("o-rin").textContent=`${fr.includes("rin")?"":"given "}${player.rin.toFixed(2)} r_g`;$("o-rin").title=`spin a* = ${spinFromIsco(player.rin).toFixed(2)}`;
   $("o-gr").textContent=freeList().includes("gr")?"":"given";
   document.querySelectorAll("#c-gr .seg button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.g===player.gr)));
 }
 let pend=false;
 function updateModel(){if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;if(!ev||!data)return;
-  pCurve=curveOf(player);pFit=fit(pCurve);const c=pFit.chi2nu,el=$("chi");el.textContent=c.toFixed(2);
+  pCurves=curvesOf(player);pCurve=pCurves.r;pFit=fit(pCurves);const c=pFit.chi2nu,el=$("chi");el.textContent=c.toFixed(2);
   const warm=Math.max(0,Math.min(1,1-Math.log10(Math.max(c,1))/Math.log10(40)));$("warmBar").style.width=(warm*100).toFixed(0)+"%";
   el.classList.toggle("good",c<1.3&&c>=1.08);el.classList.toggle("hot",c<1.08);updateSpikes();
   renderDisk($("pvYou"),player,"model");updateOutputs();drawLC();drawMap();drawStrip();});}
 for(const k of sliders)$("s-"+k).addEventListener("input",e=>{player[k]=+e.target.value;if(k==="rin"&&player.rh<1.5*player.rin){player.rh=1.5*player.rin;$("s-rh").value=player.rh;}updateModel();});
 document.querySelectorAll("#c-gr .seg button").forEach(b=>b.addEventListener("click",()=>{player.gr=+b.dataset.g;updateModel();}));
-$("newBtn").addEventListener("click",()=>newGame());
 
 /* ---------- playback ---------- */
 let last=0;
@@ -692,28 +818,53 @@ $("tday").addEventListener("input",e=>{stop();setT(+e.target.value);});
 $("lc").addEventListener("pointerdown",e=>{const r=e.currentTarget.getBoundingClientRect();stop();setT((e.clientX-r.left-48)/(r.width-60)*100);});
 
 /* ---------- reveal & score ---------- */
-function bestKey(){return "cc-best-"+freeList().join("");}
-function showBest(){let b=null;try{b=localStorage.getItem(bestKey());}catch(e){}$("best").textContent=b?`Best with ${["r½",opts.geom&&"i, θ",opts.isco&&"ISCO",opts.gr&&"GR"].filter(Boolean).join(" + ")}: ${b}`:"";}
-$("revealBtn").addEventListener("click",()=>doReveal());
+function bestKey(){return "cc-best-"+freeList().join("")+(opts.nb!=="1"?"-b"+opts.nb:"");}
+function showBest(){let b=null;try{b=localStorage.getItem(bestKey());}catch(e){}$("best").textContent=b?`Best with ${["r½",opts.geom&&"i, θ",opts.isco&&"ISCO",opts.gr&&"GR",opts.beta&&"slope"].filter(Boolean).join(" + ")+(opts.nb!=="1"?` · ${opts.nb} bands`:"")}: ${b}`:"";}
+/* one main button: Lock in & reveal → then New event (Free), Next round (Timed), or done (Daily) */
+function syncMainBtn(){const b=$("revealBtn");
+  if(!revealed){b.textContent="Lock in & reveal";b.disabled=busy||!truth;return;}
+  if(playMode==="daily"){b.textContent="Done for today";b.disabled=true;return;}
+  if(playMode==="timed"){b.textContent=timed.active?"Next round":"Play again";b.disabled=false;return;}
+  b.textContent="New event";b.disabled=false;}
+$("revealBtn").addEventListener("click",()=>{if(busy)return;
+  if(!revealed){doReveal();return;}
+  if(playMode==="timed"){if(timed.active){clearTimeout(timed.next);timed.round++;newGame();}else startTimed();return;}
+  if(playMode==="free")newGame();});
+/* degeneracy-aware scoring.
+   σ_k ≈ δ_k/√Δχ²_k from nudging each parameter by δ_k against the full multi-band data (zero points refit).
+   Each parameter's tolerance widens to 2σ_k when the data barely constrain it, and a fit that is as good as the
+   truth in χ² earns the "fit quality" share of the score even if the parameters land elsewhere in a degeneracy. */
+const DELTA={rh:0.15,inc:10,pa:12,rin:1.2,beta:0.15};
+function sensitivity(k){const nt=NUDGE[k](truth),cs=curvesOf(nt);let x=0;
+  for(const B of data.bands){const d=B.t.map(t=>interp(cs[B.b],t)-interp(tCurves[B.b],t)),m=d.reduce((a,v)=>a+v,0)/d.length;for(const v of d)x+=((v-m)/B.sig)**2;}
+  return x;}
+function chi2Tot(f){return f.chi2nu*Math.max(1,(data.nTot||data.t.length)-freeList().length-data.bands.length);}
 function doReveal(){
-  if(!truth||revealed)return;revealed=true;$("truthLeg").hidden=false;$("pvQ").hidden=true;renderDisk($("pvTrue"),truth,"truth");
-  const rows=[],free=freeList(),comp=[],g=x=>Math.exp(-0.5*x*x);
-  const sz=g(Math.log(player.rh/truth.rh)/0.15);comp.push([sz,.3]);
+  if(!truth||revealed)return;revealed=true;$("truthLeg").hidden=false;$("truthLegM").hidden=false;$("pvQ").hidden=true;renderDisk($("pvTrue"),truth,"truth");
+  const rows=[],free=freeList(),comp=[],g=x=>Math.exp(-0.5*x*x),sens={},sig={};
+  for(const k of free){sens[k]=sensitivity(k);if(DELTA[k])sig[k]=DELTA[k]/Math.sqrt(Math.max(sens[k],1e-3));}
+  const tol=(k,base)=>Math.max(base,2*(sig[k]||0));
+  const sz=g(Math.log(player.rh/truth.rh)/tol("rh",0.15));comp.push([sz,.3]);
   rows.push(["Half-light radius",player.rh.toFixed(1)+" r_g",truth.rh.toFixed(1)+" r_g",sz,"rh"]);
-  if(free.includes("inc")){const s=g((player.inc-truth.inc)/12);comp.push([s,.2]);rows.push(["Inclination",player.inc.toFixed(0)+"°",truth.inc.toFixed(0)+"°",s,"inc"]);
-    let dp=Math.abs(player.pa-truth.pa)%180;dp=Math.min(dp,180-dp);const sp=truth.inc<10?1:g(dp/15);comp.push([sp,.15]);rows.push(["Orientation",player.pa.toFixed(0)+"°",truth.pa.toFixed(0)+"°",sp,"pa"]);}
-  if(free.includes("rin")){const s=g((player.rin-truth.rin)/1.5);comp.push([s,.2]);rows.push(["ISCO",player.rin.toFixed(2)+" r_g",truth.rin.toFixed(2)+" r_g",s,"rin"]);}
-  if(free.includes("gr")){const sg=player.gr===truth.gr?1:player.gr===0?0.25:0;comp.push([sg,.15]);const gl=v=>v===0?"off":v>0?"at θ":"at θ+180°";rows.push(["GR, approaching side",gl(player.gr),gl(truth.gr),sg,"gr"]);}
-  let W=0,S=0;for(const [s,w] of comp){S+=s*w;W+=w;}const raw=Math.round(100*S/W),score=Math.max(0,raw-5*hints.length);
+  if(free.includes("inc")){const s=g((player.inc-truth.inc)/tol("inc",12));comp.push([s,.2]);rows.push(["Inclination",player.inc.toFixed(0)+"°",truth.inc.toFixed(0)+"°",s,"inc"]);
+    let dp=Math.abs(player.pa-truth.pa)%180;dp=Math.min(dp,180-dp);const sp=truth.inc<10?1:g(dp/tol("pa",15));comp.push([sp,.15]);rows.push(["Orientation",player.pa.toFixed(0)+"°",truth.pa.toFixed(0)+"°",sp,"pa"]);}
+  if(free.includes("rin")){const s=g((player.rin-truth.rin)/tol("rin",1.5));comp.push([s,.2]);rows.push(["ISCO",player.rin.toFixed(2)+" r_g",truth.rin.toFixed(2)+" r_g",s,"rin"]);}
+  if(free.includes("gr")){const undecided=sens.gr<4,sg=player.gr===truth.gr?1:undecided?(player.gr===0?0.5:1):player.gr===0?0.25:0;comp.push([sg,.15]);const gl=v=>v===0?"off":v>0?"at θ":"at θ+180°";rows.push(["GR, approaching side",gl(player.gr),gl(truth.gr),sg,"gr"]);}
+  if(free.includes("beta")){const s2=g(((player.beta||0.75)-truth.beta)/tol("beta",0.07));comp.push([s2,.15]);rows.push(["Temperature slope β",(player.beta||0.75).toFixed(2),truth.beta.toFixed(2),s2,"beta"]);}
+  let W=0,S=0;for(const [s,w] of comp){S+=s*w;W+=w;}
+  // fit quality: Δχ² of your model relative to the true disk; within ~ the number of free parameters counts as equally good
+  const dchi=chi2Tot(pFit)-chi2Tot(tFit),fq=Math.exp(-Math.max(0,dchi-free.length)/(4*(free.length+2)));
+  const raw=Math.round(100*(0.6*S/W+0.4*fq)),score=Math.max(0,raw-5*hints.length);
+  rows.push(["Fit quality (Δχ² vs truth)",dchi>=0?"+"+dchi.toFixed(1):dchi.toFixed(1),"0",fq,null]);
   if(hints.length)rows.push(["Hints used",hints.length+"",`−${5*hints.length} pts`,null]);
   rows.push(["χ²/ν",pFit.chi2nu.toFixed(2),tFit.chi2nu.toFixed(2),null]);
-  $("rtab").innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td class="y">${r[1]}</td><td class="t">${r[2]}</td><td>${r[3]==null?"":Math.round(r[3]*100)+"%"}</td><td>${r[4]&&evRate?(x=>x<25?"weak":x<150?"moderate":"strong")(evRate.per[r[4]]):""}</td></tr>`).join("");
+  $("rtab").innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td class="y">${r[1]}</td><td class="t">${r[2]}</td><td>${r[3]==null?"":Math.round(r[3]*100)+"%"}</td><td>${r[4]&&sens[r[4]]!=null?(x=>x<25?"weak":x<150?"moderate":"strong")(sens[r[4]]):""}</td></tr>`).join("");
   $("score").firstChild.textContent=score;
   $("rating").textContent=verdict(score);
-  $("result").hidden=false;$("revealBtn").disabled=true;$("hintBtn").disabled=true;
+  $("result").hidden=false;$("hintBtn").disabled=true;
   try{const b=+localStorage.getItem(bestKey())||0;if(score>b)localStorage.setItem(bestKey(),score);}catch(e){}
   showBest();drawLC();drawMap();
-  afterReveal(score);
+  afterReveal(score);syncMainBtn();
 }
 
 function drawStrip(){
@@ -721,7 +872,7 @@ function drawStrip(){
   for(let d=0;d<=100;d+=20){const cv=$("shot"+d).querySelector("canvas"),ctx=cv.getContext("2d"),f=Math.round(d/100*(NF-1)),k=cv.width/VIEW;
     ctx.imageSmoothingEnabled=true;ctx.drawImage(frameCanvases[f],-pad*k,-pad*k,NW*k,NW*k);
     const c=cv.width/2;if(diskView!=="outline")drawDisk(ctx,player,c,c,k,"model-thumb",0.95);
-    if(diskView!=="image"){const a=player.rh*PXPERRG*k;ctx.strokeStyle=css("--model");ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(c,c,Math.max(a,1.5),Math.max(a*Math.cos(player.inc*D2R),1.5),player.pa*D2R,0,Math.PI*2);ctx.stroke();}}
+    if(diskView!=="image"){ctx.lineWidth=1.5;for(const sp of outlineSpecs(player,"model")){const a=sp.rh*PXPERRG*k;ctx.strokeStyle=sp.col;ctx.beginPath();ctx.ellipse(c,c,Math.max(a,1.5),Math.max(a*Math.cos(player.inc*D2R),1.5),player.pa*D2R,0,Math.PI*2);ctx.stroke();}}}
   markStrip();
 }
 function markStrip(){for(let d=0;d<=100;d+=20)$("shot"+d).setAttribute("aria-current",String(Math.abs(tNow-d)<1.3));}
@@ -740,6 +891,8 @@ function paramErrors(){
       txt:d=>`Orientation is off: rotate the major axis ${d} on the map.`},
     {k:"rin",e:1-g((player.rin-truth.rin)/1.5),dir:player.rin>truth.rin?"smaller":"larger",
       txt:d=>`The ISCO is off: try a ${d} inner edge${d==="smaller"?" (higher spin), which sharpens the spike tips":" (lower spin), which softens the spike tips"}.`},
+    {k:"beta",e:1-g(((player.beta||0.75)-truth.beta)/0.07),dir:(player.beta||0.75)>truth.beta?"flatter":"steeper",
+      txt:d=>`The temperature slope is off: try a ${d} profile (${d==="steeper"?"larger β, light more concentrated in the centre":"smaller β, light spread further out"}).`},
     {k:"gr",e:player.gr===truth.gr?0:0.75,dir:"",
       txt:()=>player.gr===0?"The crossings are lopsided: turn GR effects on and pick the approaching side.":"The bright end is on the wrong side: switch which end of the major axis is approaching."}];
 }
@@ -755,17 +908,35 @@ $("hintBtn").addEventListener("click",()=>{
     const errs=paramErrors().filter(x=>freeList().includes(x.k)).sort((a,b)=>b.e-a.e),w=errs[0];
     if(w.e<0.15)msg="Every parameter is already close. Fine-tune them together to lower χ²/ν.";
     else{const prev=hints.filter(h=>h.k===w.k).length;
-      msg=prev?w.txt(w.dir):`The parameter furthest off is the ${({rh:"half-light radius",inc:"inclination",pa:"orientation",rin:"ISCO radius",gr:"GR setting"})[w.k]}. Ask again for which way to move it.`;
+      msg=prev?w.txt(w.dir):`The parameter furthest off is the ${({rh:"half-light radius",inc:"inclination",pa:"orientation",rin:"ISCO radius",gr:"GR setting",beta:"temperature slope"})[w.k]}. Ask again for which way to move it.`;
       hints.push({k:w.k});const li=document.createElement("li");li.textContent=msg;$("hintList").appendChild(li);$("hintBox").hidden=false;return;}
   }
   hints.push({k:"data"});const li=document.createElement("li");li.textContent=msg;$("hintList").appendChild(li);$("hintBox").hidden=false;
 });
+function syncSetupRows(){
+  $("rowParams").hidden=!custom;document.body.classList.toggle("custom",custom);requestAnimationFrame(()=>{if(data)drawLC();});$("fitNow").hidden=custom;
+  const names={geom:"i, θ",isco:"ISCO",gr:"GR",beta:"slope β"};
+  $("fitChips").innerHTML=["<span>r½</span>",...GROUPS.filter(k=>opts[k]).map(k=>`<span>${names[k]}</span>`),
+    `<span class="bd">${opts.nb==="1"?"1 band (r)":opts.nb==="3"?"3 bands (gri)":"6 bands (ugrizy)"}</span>`].join("");
+}
+let wasMulti=false;
+function syncBandUI(){syncSetupRows();{const mb=bandList().length>1;if(document.documentElement.classList.contains("multiband")!==mb){document.documentElement.classList.toggle("multiband",mb);themeColours();}}if(bandList().length>1&&!wasMulti)viewSet=new Set(bandList());wasMulti=bandList().length>1;
+  document.querySelectorAll("#bandSeg button").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.nb===opts.nb)));
+  const bl=bandList(),multi=bl.length>1;
+  $("legSingle").hidden=multi;$("legMulti").hidden=!multi;$("spikeCt").hidden=multi;
+  $("bandLeg").innerHTML=multi?bl.map(b=>`<button data-b="${b}" aria-pressed="${!hideB.has(b)}" style="color:${css(BANDS[b].v)}" title="${b}: ${BANDS[b].l} μm observed = ${truth?Math.round(BANDS[b].l*1e4/(1+truth.zq)):"?"} Å rest frame · click to show or hide">${b}</button>`).join(""):"";
+  $("bandLeg").querySelectorAll("button").forEach(x=>x.addEventListener("click",()=>{const b=x.dataset.b;if(hideB.has(b))hideB.delete(b);else if(hideB.size<bl.length-1)hideB.add(b);syncBandUI();drawLC();}));
+  if(!multi)viewSet=new Set(["r"]);else if(!bl.some(b=>viewSet.has(b)))viewSet=new Set(bl);
+  $("mapBand").innerHTML=multi?bl.map(b=>{const on=viewSet.has(b);return `<button data-b="${b}" aria-pressed="${on}" style="${on?`background:${css(BANDS[b].v)}`:`color:${css(BANDS[b].v)}`}" title="${b}: ${truth?Math.round(BANDS[b].l*1e4/(1+truth.zq)):"?"} Å rest frame · click to add or remove from the map">${b}</button>`;}).join(""):"";
+  $("mapBand").querySelectorAll("button").forEach(x=>x.addEventListener("click",()=>{const b=x.dataset.b;
+    if(viewSet.has(b)){if(bl.filter(q=>viewSet.has(q)).length<=1){toast("Keep at least one band on the map");return;}viewSet.delete(b);}else viewSet.add(b);syncBandUI();renderDisk($("pvYou"),player,"model");if(revealed)renderDisk($("pvTrue"),truth,"truth");drawMap();drawStrip();}));
+}
 function syncFitButtons(){document.querySelectorAll("#modeSeg button").forEach(b=>{const on=opts[b.dataset.o];b.setAttribute("aria-pressed",String(on));b.textContent=(on?"− ":"+ ")+b.dataset.n;});}
-function syncLevelButtons(){
+function syncLevelButtons(){if($("fitNow"))setTimeout(syncSetupRows,0);
   document.querySelectorAll("#levelSeg button").forEach(x=>{const l=x.dataset.l;
     x.setAttribute("aria-pressed",String(l==="auto"?auto&&!custom:custom?l==="any":!auto&&sel.has(l)));
     x.classList.toggle("inauto",auto&&!custom&&sel.has(l));
-    x.title=l==="auto"?"Follows your rank: Newbie and Stargazer Easy · Undergrad and Grad student Easy+Medium · Postdoc Medium · Tenure-tracker to Observatory director Medium+Hard · Caustic whisperer and up Hard":l==="any"?LEVELS.any.fit:LEVELS[l].fit+" · click to add or remove";});
+    x.title=l==="auto"?"Follows your rank: Newbie and Stargazer Easy · Undergrad and Grad student Easy+Medium · Postdoc Medium · Tenure-tracker to Observatory director Medium+Hard · Caustic whisperer Hard · Einstein\u2019s favourite Hard+Extreme":l==="any"?LEVELS.any.fit:LEVELS[l].fit+" · click to add or remove";});
   const names=[...sel].sort().map(l=>LEVELS[l].name);
   $("lvTag").textContent=(auto&&!custom?`On track (${RANKS[rankIndex()][1]}): `:"")+(custom?LEVELS.any.tag:sel.size===1?LEVELS[[...sel][0]].tag:`Mixed bag: each event is ${names.join(" or ")}. This one is ${LEVELS[level]?.name||names[0]}.`);
 }
@@ -775,6 +946,11 @@ document.querySelectorAll("#modeSeg button").forEach(b=>b.addEventListener("clic
   opts[o]=!opts[o];
   if(!custom){custom=true;level="any";saveSel();syncLevelButtons();toast("Switched to Custom");}
   syncFitButtons();newDisk(playMode==="daily"?diskRng():mulberry32((Math.random()*2**31)|0));}));
+document.querySelectorAll("#bandSeg button").forEach(b=>b.addEventListener("click",()=>{if(busy||!ev||b.dataset.nb===opts.nb)return;
+  if(playMode==="timed"&&timed.active){toast("Difficulty is fixed during a timed run");return;}
+  opts.nb=b.dataset.nb;hideB.clear();
+  if(!custom){custom=true;level="any";saveSel();syncLevelButtons();toast("Switched to Custom");}
+  syncBandUI();newDisk(playMode==="daily"?diskRng():mulberry32((Math.random()*2**31)|0));}));
 $("cmapSel").addEventListener("change",e=>{cmap=e.target.value;buildLUT();
   try{localStorage.setItem("cc-cmap",cmap);}catch(e){}if(ev){paintFrames();drawMap();drawStrip();}});
 $("diskSel").addEventListener("change",e=>{diskView=e.target.value;
@@ -813,7 +989,7 @@ function dailySeed(){return (Math.imul(dayNumber(),2654435761)^0x5eed1e)>>>0;}
 function diskRng(){return mulberry32(dailySeed()^0x7a11^(custom?0:+[...sel].sort().join("")*7919));}
 function getDaily(){try{return JSON.parse(localStorage.getItem("cc-daily")||"{}");}catch(e){return {};}}
 function setDaily(o){try{localStorage.setItem("cc-daily",JSON.stringify(o));}catch(e){}}
-function fitLabel(){return ["r½",opts.geom&&"i, θ",opts.isco&&"ISCO",opts.gr&&"GR"].filter(Boolean).join(" + ");}
+function fitLabel(){return ["r½",opts.geom&&"i, θ",opts.isco&&"ISCO",opts.gr&&"GR",opts.beta&&"slope"].filter(Boolean).join(" + ")+(opts.nb!=="1"?` · ${opts.nb} bands`:"");}
 function shareLine(r){return `Caustic Crossing #${r.n} · ${r.lv?r.lv+" · ":""}${r.stars} · ${r.fit} · ${r.score} pts · ${r.hints} hint${r.hints===1?"":"s"} · streak ${r.streak}`;}
 
 const timed={active:false,round:0,total:0,combo:0,deadline:0,iv:0,ROUNDS:5,SECS:90,next:0};
@@ -849,13 +1025,14 @@ const SPIKEQUIPS=["Peak nailed!","Threaded it!","Caustic tamed.","Right through 
 
 /* ---------- accumulated points and rank ---------- */
 /* default difficulty for each rank (index into RANKS) */
-const RANK_DEFAULT=[["1"],["1"],["1","2"],["1","2"],["2"],["2","3"],["2","3"],["2","3"]]; // Caustic whisperer and above: Hard
+const RANK_DEFAULT=[["1"],["1"],["1","2"],["1","2"],["2"],["2","3"],["2","3"],["2","3"],["3"],["3","4"]];
 function rankIndex(){const t=getTally();return RANKS.reduce((a,r,k)=>t.pts>=r[0]?k:a,0);}
 function autoSet(){return new Set(RANK_DEFAULT[rankIndex()]||["3"]);}
 function lvList(set){return [...set].sort().map(l=>LEVELS[l].name).join(" + ");}
-const RANKS=[[0,"Newbie"],[1000,"Stargazer"],[3000,"Undergrad"],[7000,"Grad student"],[15000,"Postdoc"],
-  [30000,"Tenure-tracker"],[50000,"Professor"],[80000,"Observatory director"],[120000,"Caustic whisperer"],[200000,"Einstein\u2019s favourite"]];
-function getTally(){try{return JSON.parse(localStorage.getItem("cc-tally")||'{"pts":0,"n":0}');}catch(e){return {pts:0,n:0};}}
+const RANKS=[[0,"Newbie"],[700,"Stargazer"],[2000,"Undergrad"],[4500,"Grad student"],[9000,"Postdoc"],
+  [17000,"Tenure-tracker"],[28000,"Professor"],[42000,"Observatory director"],[62000,"Caustic whisperer"],[100000,"Einstein\u2019s favourite"]];
+let memTally={pts:0,n:0};   // fallback when browser storage is unavailable
+function getTally(){try{const v=localStorage.getItem("cc-tally");return v?JSON.parse(v):{...memTally};}catch(e){return {...memTally};}}
 function showTally(gain){
   const t=getTally(),i=RANKS.reduce((a,r,k)=>t.pts>=r[0]?k:a,0),nx=RANKS[i+1];
   const frac=nx?(t.pts-RANKS[i][0])/(nx[0]-RANKS[i][0]):1;
@@ -868,7 +1045,7 @@ function showTally(gain){
   const g=$("tallyGain");g.hidden=true;void g.offsetWidth;g.textContent="+"+gain;g.hidden=false;
 }
 function addPoints(p){const t=getTally(),i0=RANKS.reduce((a,r,k)=>t.pts>=r[0]?k:a,0);t.pts+=p;t.n++;
-  try{localStorage.setItem("cc-tally",JSON.stringify(t));}catch(e){}
+  memTally={...t};try{localStorage.setItem("cc-tally",JSON.stringify(t));}catch(e){}
   showTally(p);const i1=RANKS.reduce((a,r,k)=>t.pts>=r[0]?k:a,0);if(i1>i0){if(auto&&!custom){sel=autoSet();saveSel();syncLevelButtons();toast(`New rank: ${RANKS[i1][1]}. Difficulty is now ${lvList(sel)}`);}else toast(`New rank: ${RANKS[i1][1]}`);}}
 showTally(0);
 
@@ -879,7 +1056,7 @@ function afterReveal(score){
   if(playMode==="daily"){
     const d=getDaily(),n=dayNumber();
     if(!(d.last&&d.last.n===n)){d.streak=(d.lastDay===n-1)?(d.streak||0)+1:1;d.lastDay=n;d.best=Math.max(d.best||0,d.streak);
-      d.last={n,lv:LEVELS[level].name,stars:"★".repeat(evRate.stars)+"☆".repeat(3-evRate.stars),fit:fitLabel(),score,hints:hints.length,streak:d.streak};setDaily(d);}
+      d.last={n,lv:LEVELS[level].name,stars:"★".repeat(evRate.stars)+"☆".repeat(4-evRate.stars),fit:fitLabel(),score,hints:hints.length,streak:d.streak};setDaily(d);}
     $("shareTxt").textContent=shareLine(d.last);$("shareBox").hidden=false;updateModebar();
   }else $("shareBox").hidden=true;
   if(playMode==="timed"&&timed.active){
@@ -894,7 +1071,6 @@ $("copyBtn").addEventListener("click",()=>{const t=$("shareTxt").textContent;
   try{navigator.clipboard.writeText(t).then(()=>toast("Copied"),()=>{sel();toast("Selected; press Ctrl/Cmd+C");});}catch(e){sel();toast("Selected; press Ctrl/Cmd+C");}});
 document.querySelectorAll("#playSeg button").forEach(b=>b.addEventListener("click",()=>{if(busy||b.dataset.p===playMode)return;
   clearTimed();timed.active=false;playMode=b.dataset.p;document.querySelectorAll("#playSeg button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
-  $("newBtn").hidden=playMode!=="free";
   if(playMode==="timed")startTimed();else newGame();}));
 
 document.querySelectorAll("#levelSeg button").forEach(b=>b.addEventListener("click",()=>{if(busy)return;
@@ -910,13 +1086,13 @@ document.querySelectorAll("#levelSeg button").forEach(b=>b.addEventListener("cli
   if(ev){newDisk(playMode==="daily"?diskRng():mulberry32((Math.random()*2**31)|0));if(playMode==="daily")updateModebar();}}));
 try{const l=localStorage.getItem("cc-level-pick");
   if(l==="c"||l==="any"){custom=true;auto=false;level="any";}
-  else if(l&&/^[123]+$/.test(l)){auto=false;sel=new Set(l.split(""));level=[...sel][0];}}catch(e){}
+  else if(l&&/^[1234]+$/.test(l)){auto=false;sel=new Set(l.split(""));level=[...sel][0];}}catch(e){}
 if(auto&&!custom){sel=autoSet();level=[...sel][0];}
 if(!custom)Object.assign(opts,PRESET[level]);syncLevelButtons();syncFitButtons();
 
 /* ---------- page theme ---------- */
 function applyTheme(t){if(t==="lab")document.documentElement.removeAttribute("data-ct");else document.documentElement.setAttribute("data-ct",t);
-  $("themeSel").value=t;themeColours();try{localStorage.setItem("cc-theme",t);}catch(e){}
+  $("themeSel").value=t;themeColours();if(typeof syncBandUI==="function"&&$("bandLeg"))syncBandUI();try{localStorage.setItem("cc-theme",t);}catch(e){}
   if(ev&&data){renderDisk($("pvYou"),player,"model");if(revealed)renderDisk($("pvTrue"),truth,"truth");drawLC();drawMap();drawStrip();}}
 $("themeSel").addEventListener("change",e=>applyTheme(e.target.value));
 try{const t=localStorage.getItem("cc-theme");applyTheme(["lab","daylight"].includes(t)?t:"lab");}catch(e){applyTheme("lab");}
