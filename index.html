@@ -21,11 +21,12 @@
 }
 html,body{background:var(--bg);color:var(--fg)}
 body{font-family:var(--body);font-size:14px;line-height:1.5}
-.page{max-width:1240px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
-header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 24px;border-bottom:1px solid var(--line);padding-bottom:16px}
-h1{font-family:var(--display);font-weight:600;font-size:clamp(22px,3.4vw,32px);letter-spacing:-.01em;margin:0;line-height:1.1}
+.page{max-width:1440px;margin:0 auto;padding-block:12px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:10px}
+header.top>div:first-child{display:flex;align-items:baseline;gap:6px 16px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(20px,2.4vw,26px);letter-spacing:-.01em;margin:0;line-height:1.1}
 h1 span{color:var(--model)}
-.tag{color:var(--muted);margin:6px 0 0;max-width:60ch}
+.tag{color:var(--muted);margin:0;max-width:60ch}
 .hctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .seg button{background:transparent;color:var(--muted);border:0;padding:8px 14px;font:500 13px var(--body);cursor:pointer;border-right:1px solid var(--line)}
@@ -35,13 +36,14 @@ h1 span{color:var(--model)}
 .btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
 .btn:disabled{opacity:.45;cursor:default}
 button:focus-visible,input:focus-visible{outline:2px solid var(--model);outline-offset:2px}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:18px;align-items:start}
-@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.grid{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:14px;align-items:start}
+.grid>div{gap:14px!important}
+@media (max-width:980px){.grid{grid-template-columns:minmax(0,1fr)}.mapwrap{width:100%}#lc{height:260px}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:9px;min-width:0}
 .head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
 h2{font-family:var(--display);font-weight:400;font-size:12px;letter-spacing:.09em;text-transform:uppercase;margin:0;color:var(--muted)}
 .mono{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-.mapwrap{position:relative;width:100%;aspect-ratio:1;max-width:100%;border-radius:6px;overflow:hidden;background:#05060c}
+.mapwrap{position:relative;width:min(100%,max(300px,calc(100vh - 385px)));margin-inline:auto;aspect-ratio:1;max-width:100%;border-radius:6px;overflow:hidden;background:#05060c}
 .mapwrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(5,6,12,.86);font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;padding:20px}
 .bar{width:60%;height:3px;background:var(--line);border-radius:2px;overflow:hidden}
@@ -56,31 +58,43 @@ h2{font-family:var(--display);font-weight:400;font-size:12px;letter-spacing:.09e
 .shot canvas{width:100%;aspect-ratio:1;max-width:100%;border-radius:4px;border:1px solid var(--line);display:block}
 .shot[aria-current="true"] canvas{border-color:var(--model);box-shadow:0 0 0 1px var(--model)}
 .shot[aria-current="true"]{color:var(--model)}
-#lc{width:100%;height:330px;display:block}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+#lc{width:100%;height:clamp(180px,calc(100vh - 590px),360px);display:block}
+.legend{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+#campaign{margin-left:auto;font-size:11.5px}
 .legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
 .chi{font-family:var(--mono);font-size:13px;color:var(--muted)}
 .chi b{font-size:20px;color:var(--fg);font-weight:500;margin-left:6px}
 .chi b.good{color:var(--model)}
-.modelgrid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start}
+.modelgrid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start}
 @media (max-width:560px){.modelgrid{grid-template-columns:minmax(0,1fr)}}
-.ctls{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ctls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 20px;min-width:0}
+@media (max-width:560px){.ctls{grid-template-columns:minmax(0,1fr)}}
 .ctl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center}
-.ctl label{font-weight:500}
+.ctl label{font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .ctl label small{color:var(--muted);font-weight:400;margin-left:6px}
-.ctl output{font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums;color:var(--model);text-align:right}
+.ctl output{font-family:var(--mono);font-size:11.5px;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--model);text-align:right}
 .ctl input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--model)}
 .ctl.locked{opacity:.5}
 .ctl.locked output{color:var(--muted)}
 .ctl .seg{grid-column:1/-1;width:max-content;max-width:100%;flex-wrap:wrap}
+#c-gr{grid-column:1/-1;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}
+#c-gr output{margin-left:auto;order:3}
+#c-gr .seg{order:2}
 .ctl .seg button{padding:6px 10px;font-size:12px}
 .previews{display:flex;gap:12px}
 .pv{display:flex;flex-direction:column;gap:6px;align-items:center}
-.pv .box{position:relative;width:150px;height:150px;border-radius:6px;overflow:hidden;background:#05060c;border:1px solid var(--line)}
+.pv .box{position:relative;width:128px;height:128px;border-radius:6px;overflow:hidden;background:#05060c;border:1px solid var(--line)}
 .pv canvas{width:100%;height:100%;display:block}
 .pv .q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:38px;color:var(--line)}
 .pv span{font-size:12px;color:var(--muted)}
-.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:9px}
+.topband{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
+.topband .setup{flex:1 1 380px}
+.actbtns{display:flex;flex-direction:column;gap:8px;justify-content:center;flex:0 0 auto}
+.actbtns .btn{width:100%}
+@media (max-width:700px){.actbtns{flex-direction:row;flex-wrap:wrap;width:100%}.actbtns .btn{width:auto;flex:1}}
+.maprow{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap}
+.maprow .cbar{flex:1 1 200px}
 .result{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;background:var(--panel2);border-radius:8px;padding:14px}
 @media (max-width:560px){.result{grid-template-columns:minmax(0,1fr)}}
 .score{font-family:var(--display);font-size:46px;line-height:1;color:var(--model)}
@@ -96,15 +110,15 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
 .notes p,.notes li{color:var(--muted);margin:0;max-width:62ch}
 .notes ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
 .best{font-size:12px;color:var(--muted)}
-.tally{display:flex;flex-direction:column;align-items:flex-start;gap:2px;line-height:1.25;min-width:0}
+.tally{display:flex;flex-direction:row;align-items:center;flex-wrap:wrap;gap:6px 16px;line-height:1.25;min-width:0;width:100%}
 .tally .pts{font-family:var(--display);font-size:18px;position:relative;font-variant-numeric:tabular-nums}
 .tally .pts b{color:var(--model);font-weight:600}
-.rankrow{display:flex;flex-direction:column;gap:5px;min-width:200px}
+.rankrow{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;min-width:0}
 .rankrow .top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .rankrow .rank{font-family:var(--display);font-size:15px;color:var(--fg);border:1px solid var(--model);border-radius:999px;padding:2px 12px;background:color-mix(in srgb,var(--model) 14%,transparent)}
 .rankrow .ev{font-size:13px;color:var(--fg)}
 .rankrow .avg{color:var(--model);font-weight:600}
-.rankrow .prog{height:6px;border-radius:3px;background:var(--line);overflow:hidden;max-width:260px}
+.rankrow .prog{height:6px;border-radius:3px;background:var(--line);overflow:hidden;width:90px}
 .rankrow .prog i{display:block;height:100%;background:var(--model);transition:width .6s}
 .rankrow .next{font-size:12.5px;color:var(--muted)}
 .rankrow .next b{color:var(--model);font-weight:600}
@@ -122,21 +136,25 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
 .share{grid-column:1/-1;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .share code{font-family:var(--mono);font-size:12.5px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 10px;user-select:all;min-width:0;overflow-wrap:anywhere}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--model);color:var(--bg);font-weight:600;padding:10px 18px;border-radius:999px;z-index:20;box-shadow:0 8px 30px rgba(0,0,0,.4)}
-.evrate{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.evrate .badge{--c:var(--model);display:inline-flex;align-items:center;gap:8px;border:1px solid var(--c);color:var(--c);border-radius:999px;padding:4px 12px;font-weight:600;font-size:13px;background:color-mix(in srgb,var(--c) 12%,transparent)}
+.evrate{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1 1 auto;min-width:0}
+.evrate .badge{white-space:nowrap;--c:var(--model);display:inline-flex;align-items:center;gap:8px;border:1px solid var(--c);color:var(--c);border-radius:999px;padding:4px 12px;font-weight:600;font-size:13px;background:color-mix(in srgb,var(--c) 12%,transparent)}
 .evrate .badge.e1{--c:var(--good)} .evrate .badge.e2{--c:var(--model)} .evrate .badge.e3{--c:var(--truth)}
+.evrate .stars{letter-spacing:1px!important;font-size:13px!important}
 .evrate .stars{letter-spacing:2px;font-size:15px}
 .evrate .stars i{font-style:normal;opacity:.3}
-.evrate .pmult{font-family:var(--mono);font-size:12.5px;color:var(--model);border:1px dashed var(--model);border-radius:6px;padding:2px 8px}
+.evrate .pmult{font-family:var(--mono);font-size:12px;white-space:nowrap;color:var(--model);border:1px dashed var(--model);border-radius:6px;padding:2px 8px}
 .evrate .lvnote{font-size:12px;color:var(--muted);font-style:italic}
 .evrate .why{font-family:var(--mono);font-size:12px;color:var(--muted)}
-.viewopts{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:flex-end}
+.viewopts{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:flex-end}
 .cmsel{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
 .cmsel select{background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:5px;font:12px var(--body);padding:3px 6px}
 .vo{display:flex;align-items:center;gap:8px}
 .vo .seg button,#modeSeg button{padding:5px 10px;font-size:12px}
-.setup{display:flex;flex-direction:column;gap:8px;background:var(--panel2);border-radius:8px;padding:10px 12px}
+.setup{display:flex;flex-direction:column;gap:7px;background:var(--panel2);border-radius:8px;padding:9px 12px}
 .stitle{font-family:var(--display);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--model)}
+.stitle .tagline{font-family:var(--body);font-size:12.5px;letter-spacing:0;text-transform:none;color:var(--muted);font-style:italic;margin-left:8px}
+#levelSeg{flex-wrap:wrap}
+#levelSeg button{padding:6px 9px}
 .srow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .slab{font-family:var(--mono);font-size:12px;color:var(--muted);width:84px;flex:none}
 .setup .seg button{padding:6px 11px;font-size:12.5px}
@@ -169,17 +187,17 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
 
   <div class="grid">
     <section class="card">
-      <div class="head"><h2>Source-plane map · source-centred</h2><span class="mono" id="mapMeta"></span></div>
+      <div class="head"><h2>Source-plane map</h2><span class="mono" id="mapMeta"></span></div>
       <div class="mapwrap">
         <canvas id="map" aria-label="Evolving magnification map centred on the quasar"></canvas>
         <div class="loading" id="loading"><div id="loadTxt">Shooting rays through the star field…</div><div class="bar"><i id="loadBar"></i></div></div>
       </div>
-      <div class="mono" id="lensTxt" style="color:var(--muted)"></div>
-      <div class="cbar mono"><span id="cbLo">μ 0.5</span><div class="grad" id="cbGrad"></div><span id="cbHi">μ 40</span></div>
+      <div class="mono" id="lensTxt" style="color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+      <div class="maprow"><div class="cbar mono"><span id="cbLo">μ 0.5</span><div class="grad" id="cbGrad"></div><span id="cbHi">μ 40</span></div>
       <div class="viewopts">
         <label class="cmsel">Disk <select id="diskSel" aria-label="How to draw the disk on the map"><option value="image">Image</option><option value="outline">Outline</option><option value="both" selected>Both</option></select></label>
         <label class="cmsel">Colours <select id="cmapSel" aria-label="Colour map for the magnification map"><option value="ocean">Ocean</option><option value="magma">Magma</option><option value="gray">Grey</option><option value="viridis">Viridis</option><option value="rainbow">Rainbow</option><option value="cosmic">Cosmic</option></select></label>
-      </div>
+      </div></div>
       <div class="play">
         <button class="btn ghost" id="playBtn">Play</button>
         <input type="range" id="tday" min="0" max="100" step="0.1" value="0" aria-label="Day">
@@ -190,26 +208,26 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
 
     <div style="display:flex;flex-direction:column;gap:18px;min-width:0">
       <section class="card">
-        <div class="head"><h2>Light curve</h2><div class="chi">χ²/ν<b id="chi">—</b><span class="warm" title="How close your curve is to the data"><i id="warmBar"></i></span><span class="mono" id="spikeCt"></span></div></div>
-        <div class="evrate" id="evRate" title="Measured from how strongly these data constrain each parameter you are fitting"></div>
+        <div class="head"><h2>Light curve</h2><div class="evrate" id="evRate" title="Difficulty of this event"></div><div class="chi">χ²/ν<b id="chi">—</b><span class="warm" title="How close your curve is to the data"><i id="warmBar"></i></span><span class="mono" id="spikeCt"></span></div></div>
         <canvas id="lc" aria-label="Light curve with data and model"></canvas>
         <div class="legend">
           <span><i style="background:var(--data)"></i>Observed (with 1σ errors)</span>
           <span><i style="background:var(--model)"></i>Your model</span>
           <span id="truthLeg" hidden><i style="background:var(--truth)"></i>True disk</span>
+          <span class="mono" id="campaign"></span>
         </div>
       </section>
 
       <section class="card">
-        <div class="head"><h2>Your disk model</h2></div>
+        <div class="topband">
         <div class="setup" aria-label="Level setup">
-          <div class="stitle">Level setup</div>
+          <div class="stitle">Level setup <span class="tagline" id="lvTag"></span></div>
           <div class="srow"><span class="slab">Difficulty</span>
             <div class="seg" role="group" aria-label="Difficulty" id="levelSeg">
-              <button data-l="1" aria-pressed="true" title="Fit r½ only · nightly data, 1–1.5% errors">Easy</button>
-              <button data-l="2" aria-pressed="false" title="Fit r½, i, θ · weather-hit data, 1.5–2.2% errors">Medium</button>
-              <button data-l="3" aria-pressed="false" title="Fit r½, i, θ, ISCO, GR · sparse data with a gap, 2.2–3% errors">Hard</button>
-              <button data-l="any" aria-pressed="false" title="Pick the parameters yourself with the fit buttons · random data">Custom</button>
+              <button data-l="1" aria-pressed="true">Easy</button>
+              <button data-l="2" aria-pressed="false">Medium</button>
+              <button data-l="3" aria-pressed="false">Hard</button>
+              <button data-l="any" aria-pressed="false">Custom</button>
             </div>
           </div>
           <div class="srow"><span class="slab">Parameters</span>
@@ -221,33 +239,34 @@ td.y{color:var(--model)} td.t{color:var(--truth)}
             </div>
           </div>
         </div>
+        <div class="actbtns">
+            <button class="btn ghost" id="hintBtn">Hint <span class="mono" id="hintCost">−5 pts</span></button>
+            <button class="btn" id="revealBtn">Lock in &amp; reveal</button>
+            <button class="btn ghost" id="newBtn">New event</button>
+          </div>
+        </div>
         <div class="modelgrid">
           <div class="ctls">
             <div class="ctl" id="c-rh"><label for="s-rh">Half-light radius<small>r½</small></label><output id="o-rh"></output><input type="range" id="s-rh" min="6" max="60" step="0.5"></div>
             <div class="ctl" id="c-inc"><label for="s-inc">Inclination<small>i</small></label><output id="o-inc"></output><input type="range" id="s-inc" min="0" max="80" step="1"></div>
-            <div class="ctl" id="c-pa"><label for="s-pa">Orientation<small>θ, major axis</small></label><output id="o-pa"></output><input type="range" id="s-pa" min="0" max="179" step="1"></div>
-            <div class="ctl" id="c-rin"><label for="s-rin">ISCO radius<small>r_in</small></label><output id="o-rin"></output><input type="range" id="s-rin" min="1.25" max="8.95" step="0.05"></div>
-            <div class="ctl" id="c-gr"><label>GR effects<small>beaming + redshift</small></label><output id="o-gr"></output>
+            <div class="ctl" id="c-pa"><label for="s-pa">Orientation<small>θ</small></label><output id="o-pa"></output><input type="range" id="s-pa" min="0" max="179" step="1"></div>
+            <div class="ctl" id="c-rin"><label for="s-rin">ISCO<small>r_in</small></label><output id="o-rin"></output><input type="range" id="s-rin" min="1.25" max="8.95" step="0.05"></div>
+            <div class="ctl" id="c-gr"><label>GR effects<small>approaching side</small></label><output id="o-gr"></output>
               <div class="seg" role="group" aria-label="GR effects">
                 <button id="g0" data-g="0" aria-pressed="true">Off</button>
-                <button id="g1" data-g="1" aria-pressed="false">Approaching at θ</button>
-                <button id="g2" data-g="-1" aria-pressed="false">Approaching at θ+180°</button>
+                <button id="g1" data-g="1" aria-pressed="false">At θ</button>
+                <button id="g2" data-g="-1" aria-pressed="false">At θ+180°</button>
               </div>
             </div>
           </div>
           <div class="previews">
-            <div class="pv"><div class="box"><canvas id="pvYou" width="150" height="150"></canvas></div><span>Yours</span></div>
-            <div class="pv"><div class="box"><canvas id="pvTrue" width="150" height="150"></canvas><div class="q" id="pvQ">?</div></div><span>Truth</span></div>
+            <div class="pv"><div class="box"><canvas id="pvYou" width="128" height="128"></canvas></div><span>Yours</span></div>
+            <div class="pv"><div class="box"><canvas id="pvTrue" width="128" height="128"></canvas><div class="q" id="pvQ">?</div></div><span>Truth</span></div>
           </div>
         </div>
         <div class="hint" id="hintBox" hidden><ol id="hintList"></ol></div>
         <div class="actions">
           <div class="tally" id="tally" title="Points from every reveal, saved in this browser"><span class="pts"><b id="tallyPts">0</b> pts<em id="tallyGain" hidden></em></span><div class="rankrow" id="tallyRank"></div><span class="best" id="best"></span></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn ghost" id="hintBtn">Hint <span class="mono" id="hintCost">−5 pts</span></button>
-            <button class="btn" id="revealBtn">Lock in &amp; reveal</button>
-            <button class="btn ghost" id="newBtn">New event</button>
-          </div>
         </div>
         <div class="result" id="result" hidden>
           <div class="score" id="score">0<small id="rating"></small></div>
@@ -433,9 +452,15 @@ function randTruth(rng){
 let level="1";
 /* Easy/Medium/Hard are presets for both the data and the parameters you fit; Custom = your own fit choices */
 const PRESET={"1":{geom:false,isco:false,gr:false},"2":{geom:true,isco:false,gr:false},"3":{geom:true,isco:true,gr:true}};
+const LEVELS={
+  "1":{name:"Easy",camp:1,lo:0.01,hi:0.015,dt:1,tag:"Crayons allowed. Just find the size.",fit:"Fit r½ · nightly data, 1–1.5% errors"},
+  "2":{name:"Medium",camp:2,lo:0.015,hi:0.022,dt:2,tag:"Clouds, and a tilted disk. Welcome to 3D.",fit:"Fit r½, i, θ · weather losses, 1.5–2.2% errors"},
+  "3":{name:"Hard",camp:3,lo:0.022,hi:0.03,dt:3,tag:"Everything, sparse and noisy. Reviewer 2 is watching.",fit:"Fit r½, i, θ, ISCO, GR · sparse with a gap, 2.2–3% errors"},
+  any:{name:"Custom",tag:"Your rules. Pick the parameters below.",fit:"Your choice of parameters · random data"}};
+const LVNAMES=["","Easy","Medium","Hard"];
 function makeData(rng){
-  const L=level==="any"?0:+level,u=L===1?0:L===2?0.5:L===3?0.9:rng();
-  const lo=[0.01,0.01,0.015,0.022][L],hi=[0.03,0.015,0.022,0.03][L];
+  const P=LEVELS[level],L=P.camp||0,u=L===1?0:L===2?0.5:L===3?0.9:rng();
+  const lo=P.lo??0.01,hi=P.hi??0.03;
   const sig=Math.round((lo+rng()*(hi-lo))*1000)/1000,t=[];let cad;
   if(u<0.35){cad="nightly";for(let d=0;d<100;d++)t.push(d+0.5+(rng()-0.5)*0.6);}
   else if(u<0.7){cad="weather losses";for(let d=0;d<100;d++)if(rng()<0.7)t.push(d+0.5+(rng()-0.5)*0.6);}
@@ -473,11 +498,11 @@ async function newGame(seedIn){
   $("newBtn").disabled=true;$("revealBtn").disabled=true;$("loading").hidden=false;$("loadBar").style.width="0%";
   const seed=(typeof seedIn==="number"?seedIn:null)??(playMode==="daily"?dailySeed():(Math.random()*2**31)|0),rng=mulberry32(seed),lens=randLens(rng);curSeed=seed;
   $("loadTxt").textContent=`Ray-shooting ${NF} frames of the moving star field…`;
-  try{await buildEvent(seed,lens,f=>{$("loadBar").style.width=(f*100).toFixed(0)+"%";$("loadTxt").textContent=`Ray-shooting frame ${Math.round(f*NF)} of ${NF}…`;});}
+  try{await buildEvent(seed,lens,f=>{$("loadBar").style.width=(f*100).toFixed(0)+"%";if(Math.round(f*NF)%8===1)$("loadTxt").textContent=pick(LOADQUIPS)+` (${Math.round(f*NF)}/${NF})`;});}
   catch(e){$("loadTxt").textContent="Ray shooting failed. Press New event to try again.";busy=false;$("newBtn").disabled=false;return;}
   paintFrames();
   $("mapMeta").textContent=`κ ${lens.kt.toFixed(2)} · κ*/κ ${lens.fs.toFixed(2)} · γ ${lens.g.toFixed(2)} · ${ev.ns} stars`;
-  $("lensTxt").textContent=`${lens.k<0.15?"sparse caustics":lens.k<0.3?"moderate caustic network":"dense caustic network"}${1-lens.kt-lens.g<0?" · saddle-point image":""} · source moves ${lens.len.toFixed(2)} R_E in 100 days · stars ${(lens.sig*400).toFixed(1)} r_g/day`;
+  $("lensTxt").title=$("lensTxt").textContent=`${lens.k<0.15?"sparse caustics":lens.k<0.3?"moderate caustic network":"dense caustic network"}${1-lens.kt-lens.g<0?" · saddle-point image":""} · source ${lens.len.toFixed(2)} R_E / 100 d · stars ${(lens.sig*400).toFixed(1)} r_g/d`;
   $("loading").hidden=true;$("newBtn").disabled=false;busy=false;
   newDisk(playMode==="daily"?diskRng():rng);
   if(playMode==="timed")startRound();
@@ -503,13 +528,14 @@ function newDisk(rng){
   let best=null;
   for(let tries=0;tries<14;tries++){truth=randTruth(rng);tCurve=curveOf(truth);data=makeData(rng);evRate=rateEvent();
     if(evRate.impossible&&tries<13)continue;
-    const miss=level==="any"?0:Math.abs(evRate.dLev-(+level));
+    const miss=level==="any"?0:Math.abs(evRate.dLev-LEVELS[level].dt);
     if(!best||miss<best.miss)best={miss,truth,tCurve,data,evRate};
     if(miss===0)break;}
   ({truth,tCurve,data,evRate}=best);if(level!=="any")evRate.stars=+level;
   tFit=fit(tCurve);spikes=findSpikes();
-  $("evRate").innerHTML=`<span class="badge e${evRate.stars}" title="Overall rating: how informative the data are, plus the extra parameters you are fitting"><span class="stars">${"★".repeat(evRate.stars)}<i>${"★".repeat(3-evRate.stars)}</i></span>${["","Easy","Medium","Hard"][evRate.stars]} event</span><span class="why">${["","Easy","Medium","Hard"][evRate.dLev]} data · ${data.t.length} epochs · ${data.cad} · ${(data.sig*100).toFixed(1)}% errors</span>${level!=="any"&&evRate.dLev!==+level?`<span class="lvnote">closest to ${["","Easy","Medium","Hard"][+level]} found on this map</span>`:""}<span class="pmult" title="Points earned = score × this. Grows with each extra parameter you fit and with the event's stars.">points ×${pointMult().toFixed(2)}</span>`;
-  revealed=false;hints=[];$("hintList").innerHTML="";$("hintBox").hidden=true;$("hintBtn").disabled=false;$("result").hidden=true;$("truthLeg").hidden=true;$("pvQ").hidden=false;$("pvTrue").getContext("2d").clearRect(0,0,150,150);
+  $("evRate").innerHTML=`<span class="badge e${evRate.stars}" title="Overall rating: how informative the data are, plus the extra parameters you are fitting"><span class="stars">${"★".repeat(evRate.stars)}<i>${"★".repeat(3-evRate.stars)}</i></span>${level==="any"?"Custom":LVNAMES[+level]}</span><span class="pmult" title="Points earned = score × this. Grows with each extra parameter you fit and with the event's stars.">×${pointMult().toFixed(2)} pts</span>`;
+  $("campaign").textContent=`${level==="any"?["","Easy","Medium","Hard"][evRate.dLev]+" data · ":""}${data.t.length} epochs · ${data.cad} · ${(data.sig*100).toFixed(1)}% errors`;
+  revealed=false;hints=[];$("hintList").innerHTML="";$("hintBox").hidden=true;$("hintBtn").disabled=false;$("result").hidden=true;$("truthLeg").hidden=true;$("pvQ").hidden=false;$("pvTrue").getContext("2d").clearRect(0,0,128,128);
   player={rh:25,inc:40,pa:90,rin:6,gr:0};{const fr=freeList();for(const k of ["rin","inc","pa","gr"])if(!fr.includes(k))player[k]=truth[k];}
   syncControls();tNow=0;$("tday").value=0;$("dayLbl").textContent="day 0.0";
   $("revealBtn").disabled=false;showBest();updateModel();
@@ -579,11 +605,11 @@ function drawLC(){
   const X=t=>ml+(t/100)*(w-ml-mr),Y=m=>mt+((m-lo)/(hi-lo))*ph;
   const grid=css("--line"),mut=css("--muted");
   ctx.font=`${11*d}px "IBM Plex Mono",monospace`;ctx.fillStyle=mut;ctx.strokeStyle=grid;ctx.lineWidth=d;
-  const step=niceStep((hi-lo)/5);ctx.textAlign="right";ctx.textBaseline="middle";
+  const step=niceStep((hi-lo)/Math.max(2.5,Math.min(5,ph/(42*d))));ctx.textAlign="right";ctx.textBaseline="middle";
   for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step){const y=Y(v);ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(w-mr,y);ctx.stroke();ctx.fillText((v>0?"+":"")+v.toFixed(step<0.1?2:1),ml-6*d,y);}
-  ctx.textAlign="center";ctx.textBaseline="top";for(let t=0;t<=100;t+=20)ctx.fillText(t,X(t),h-mb+8*d);
+  ctx.textAlign="center";ctx.textBaseline="top";for(let t=0;t<=100;t+=20)ctx.fillText(t===100?"100 d":t,X(t)-(t===100?10*d:0),h-mb+8*d);
   ctx.save();ctx.translate(12*d,mt+ph/2);ctx.rotate(-Math.PI/2);ctx.textBaseline="middle";ctx.fillText("Δm (mag)",0,0);ctx.restore();
-  ctx.textAlign="right";ctx.fillText("days",w-mr,h-mb+8*d);
+  
   const line=(c,off,col,dash)=>{ctx.save();ctx.strokeStyle=col;ctx.lineWidth=2*d;ctx.setLineDash(dash||[]);ctx.beginPath();
     for(let k=0;k<c.length;k++){const t=k/(c.length-1)*100,y=Y(c[k]+off-mean);k?ctx.lineTo(X(t),y):ctx.moveTo(X(t),y);}ctx.stroke();ctx.restore();};
   ctx.save();ctx.beginPath();ctx.rect(ml,mt,w-ml-mr,ph);ctx.clip();
@@ -625,12 +651,12 @@ function syncControls(){
 }
 function updateOutputs(){
   const s=solveDisk(player.rin,player.rh);
-  $("o-rh").textContent=`${s.rhAct.toFixed(1)} r_g · ${(s.rhAct*RG).toFixed(3)} R_E`;
+  $("o-rh").textContent=`${s.rhAct.toFixed(1)} r_g`;$("o-rh").title=`${(s.rhAct*RG).toFixed(3)} R_E`;
   const fr=freeList();
   $("o-inc").textContent=fr.includes("inc")?player.inc.toFixed(0)+"°":`given ${player.inc}°`;
   $("o-pa").textContent=fr.includes("pa")?player.pa.toFixed(0)+"°":`given ${player.pa}°`;
-  $("o-rin").textContent=fr.includes("rin")?`${player.rin.toFixed(2)} r_g · a* = ${spinFromIsco(player.rin).toFixed(2)}`:`given ${player.rin.toFixed(2)} r_g · a* = ${spinFromIsco(player.rin).toFixed(2)}`;
-  $("o-gr").textContent=fr.includes("gr")?"":`given ${player.gr>0?"θ":"θ+180°"}`;
+  $("o-rin").textContent=`${fr.includes("rin")?"":"given "}${player.rin.toFixed(2)} r_g`;$("o-rin").title=`spin a* = ${spinFromIsco(player.rin).toFixed(2)}`;
+  $("o-gr").textContent=freeList().includes("gr")?"":"given";
   document.querySelectorAll("#c-gr .seg button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.g===player.gr)));
 }
 let pend=false;
@@ -670,7 +696,7 @@ function doReveal(){
   rows.push(["χ²/ν",pFit.chi2nu.toFixed(2),tFit.chi2nu.toFixed(2),null]);
   $("rtab").innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td class="y">${r[1]}</td><td class="t">${r[2]}</td><td>${r[3]==null?"":Math.round(r[3]*100)+"%"}</td><td>${r[4]&&evRate?(x=>x<25?"weak":x<150?"moderate":"strong")(evRate.per[r[4]]):""}</td></tr>`).join("");
   $("score").firstChild.textContent=score;
-  $("rating").textContent=score>=90?"Caustic whisperer":score>=75?"Solid fit":score>=50?"Close, but degenerate":"Back to the telescope";
+  $("rating").textContent=verdict(score);
   $("result").hidden=false;$("revealBtn").disabled=true;$("hintBtn").disabled=true;
   try{const b=+localStorage.getItem(bestKey())||0;if(score>b)localStorage.setItem(bestKey(),score);}catch(e){}
   showBest();drawLC();drawMap();
@@ -722,7 +748,7 @@ $("hintBtn").addEventListener("click",()=>{
   hints.push({k:"data"});const li=document.createElement("li");li.textContent=msg;$("hintList").appendChild(li);$("hintBox").hidden=false;
 });
 function syncFitButtons(){document.querySelectorAll("#modeSeg button").forEach(b=>{const on=opts[b.dataset.o];b.setAttribute("aria-pressed",String(on));b.textContent=(on?"− ":"+ ")+b.dataset.n;});}
-function syncLevelButtons(){document.querySelectorAll("#levelSeg button").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.l===level)));}
+function syncLevelButtons(){document.querySelectorAll("#levelSeg button").forEach(x=>{x.setAttribute("aria-pressed",String(x.dataset.l===level));x.title=LEVELS[x.dataset.l].fit;});$("lvTag").textContent=LEVELS[level].tag;}
 document.querySelectorAll("#modeSeg button").forEach(b=>b.addEventListener("click",()=>{if(busy||!ev)return;const o=b.dataset.o;
   if(playMode==="timed"&&timed.active){toast("Difficulty is fixed during a timed run");return;}
   opts[o]=!opts[o];
@@ -751,8 +777,8 @@ function updateSpikes(){
   let lit=0;
   for(const sp of spikes){let ss=0,n=0;
     for(let k=0;k<data.t.length;k++)if(data.t[k]>=sp.t0&&data.t[k]<=sp.t1){const r=(data.m[k]-interp(pCurve,data.t[k])-pFit.off)/data.sig;ss+=r*r;n++;}
-    const on=n>=2&&Math.sqrt(ss/n)<1.6;if(on&&!sp.lit)sp.flash=performance.now();sp.lit=on;if(on)lit++;}
-  $("spikeCt").textContent=spikes.length?`spikes ${lit}/${spikes.length}`:"";
+    const on=n>=2&&Math.sqrt(ss/n)<1.6;if(on&&!sp.lit){sp.flash=performance.now();if(spikes.cheer)toast(pick(SPIKEQUIPS));}sp.lit=on;if(on)lit++;}
+  spikes.cheer=true;$("spikeCt").textContent=spikes.length?`spikes ${lit}/${spikes.length}`:"";
 }
 
 /* ---------- toast ---------- */
@@ -788,13 +814,26 @@ function updateModebar(){
 }
 function startTimed(){timed.active=true;timed.round=1;timed.total=0;timed.combo=0;newGame();}
 
+/* ---------- a little personality ---------- */
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function verdict(sc){
+  if(sc>=95)return pick(["Einstein would be proud.","Did you peek? We're checking.","Caustic whisperer.","Send this to Nature. Today."]);
+  if(sc>=80)return pick(["Publishable. Minor revisions.","Solid fit. Have a cookie.","The quasar nods approvingly.","Referee says: 'acceptable'."]);
+  if(sc>=60)return pick(["Close, but degenerate.","Error bars are doing a lot of work here.","Not bad. The disk is mildly offended.","Major revisions."]);
+  if(sc>=35)return pick(["Have you tried squinting?","The disk would like a word.","Back to the telescope.","Reviewer 2 is typing…"]);
+  return pick(["That was a galaxy, not a quasar.","Bold. Wrong, but bold.","Rejected without review.","Did you fit the moon?"]);
+}
+const LOADQUIPS=["Shooting millions of rays through the star field…","Asking Einstein for permission to bend light…","Herding stars into position…","Polishing the caustics…","Waiting for clear skies…","Bribing the time-allocation committee…","Calibrating the gravitational lens…","Untangling folded light rays…"];
+const SPIKEQUIPS=["Peak nailed!","Threaded it!","Caustic tamed.","Right through the spike!"];
+
 /* ---------- accumulated points and rank ---------- */
-const RANKS=[[0,"Grad student"],[500,"Postdoc"],[1500,"Observer"],[4000,"Staff scientist"],[8000,"PI"],[15000,"Caustic whisperer"]];
+const RANKS=[[0,"Newbie"],[1000,"Stargazer"],[3000,"Undergrad"],[7000,"Grad student"],[15000,"Postdoc"],
+  [30000,"Tenure-tracker"],[50000,"Professor"],[80000,"Observatory director"],[120000,"Caustic whisperer"],[200000,"Einstein\u2019s favourite"]];
 function getTally(){try{return JSON.parse(localStorage.getItem("cc-tally")||'{"pts":0,"n":0}');}catch(e){return {pts:0,n:0};}}
 function showTally(gain){
   const t=getTally(),i=RANKS.reduce((a,r,k)=>t.pts>=r[0]?k:a,0),nx=RANKS[i+1];
   const frac=nx?(t.pts-RANKS[i][0])/(nx[0]-RANKS[i][0]):1;
-  $("tallyRank").innerHTML=`<div class="top"><span class="rank">${RANKS[i][1]}</span><span class="ev">${t.n} event${t.n===1?"":"s"} played</span><span class="ev">avg <b class="avg">${t.n?Math.round(t.pts/t.n).toLocaleString():"—"}</b> pts per event</span></div>
+  $("tallyRank").innerHTML=`<div class="top"><span class="rank">${RANKS[i][1]}</span><span class="ev">${t.n} event${t.n===1?"":"s"}</span><span class="ev">avg <b class="avg">${t.n?Math.round(t.pts/t.n).toLocaleString():"—"}</b> pts/event</span></div>
     <div class="prog"><i style="width:${(frac*100).toFixed(1)}%"></i></div>
     <div class="next">${nx?`<b>${(nx[0]-t.pts).toLocaleString()} pts</b> to ${nx[1]}`:"Top rank reached"}</div>`;
   const el=$("tallyPts"),to=t.pts;
@@ -814,7 +853,7 @@ function afterReveal(score){
   if(playMode==="daily"){
     const d=getDaily(),n=dayNumber();
     if(!(d.last&&d.last.n===n)){d.streak=(d.lastDay===n-1)?(d.streak||0)+1:1;d.lastDay=n;d.best=Math.max(d.best||0,d.streak);
-      d.last={n,lv:level==="any"?"Custom":["","Easy","Medium","Hard"][+level],stars:"★".repeat(evRate.stars)+"☆".repeat(3-evRate.stars),fit:fitLabel(),score,hints:hints.length,streak:d.streak};setDaily(d);}
+      d.last={n,lv:LEVELS[level].name,stars:"★".repeat(evRate.stars)+"☆".repeat(3-evRate.stars),fit:fitLabel(),score,hints:hints.length,streak:d.streak};setDaily(d);}
     $("shareTxt").textContent=shareLine(d.last);$("shareBox").hidden=false;updateModebar();
   }else $("shareBox").hidden=true;
   if(playMode==="timed"&&timed.active){
@@ -837,7 +876,7 @@ document.querySelectorAll("#levelSeg button").forEach(b=>b.addEventListener("cli
   level=b.dataset.l;syncLevelButtons();if(PRESET[level])Object.assign(opts,PRESET[level]);syncFitButtons();
   try{localStorage.setItem("cc-level-pick",level);}catch(e){}
   if(ev){newDisk(playMode==="daily"?diskRng():mulberry32((Math.random()*2**31)|0));if(playMode==="daily")updateModebar();}}));
-try{const l=localStorage.getItem("cc-level-pick");if(l&&["any","1","2","3"].includes(l))level=l;}catch(e){}
+try{const l=localStorage.getItem("cc-level-pick");if(l&&LEVELS[l])level=l;}catch(e){}
 if(PRESET[level])Object.assign(opts,PRESET[level]);syncLevelButtons();syncFitButtons();
 window.addEventListener("resize",()=>{drawMap();drawLC();});
 drawMap();newGame();
