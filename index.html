@@ -416,26 +416,44 @@ function shootFrame(d){var sx=d.sx,sy=d.sy,sm=d.sm,ns=sx.length,N=d.N,Lw=d.Lw,c1
   var lo1=pc(h1,0.002)-1,hi1=pc(h1,0.998)+1,lo2=pc(h2,0.002)-1,hi2=pc(h2,0.998)+1;
   var nx=Math.round((hi1-lo1)*d.dens),ny=Math.round((hi2-lo2)*d.dens),x1m=lo1,x2m=lo2,dx=(hi1-lo1)/nx,dy=(hi2-lo2)/ny,B=Math.max(8,Math.round(Math.min(0.2,Math.max(Lw/3,0.004))*d.dens)),shot=0;   // blocks ~ a third of the window, so culling stays tight
   var c=new Float32Array(N*N),sc=N/(2*Lw),near=new Int32Array(ns),cf=new Float64Array(8);
-  for(var j0=0;j0<ny;j0+=B){var j1=Math.min(ny,j0+B),ya=x2m+j0*dy,yb=x2m+j1*dy,cy=(ya+yb)/2;
-    for(var i0=0;i0<nx;i0+=B){var i1=Math.min(nx,i0+B),xa=x1m+i0*dx,xb=x1m+i1*dx,cx=(xa+xb)/2,nn=0;
+  /* two-level culling: first test superblocks (~0.2 R_E) with the same exact bound, then the small blocks inside survivors */
+  var SB=Math.max(B,Math.round(0.2*d.dens/B)*B);
+  function superCull(xa,xb,ya,yb){var bs=Math.max(xb-xa,yb-ya),cx=(xa+xb)/2,cy=(ya+yb)/2,mg=bs*(Math.abs(g1)+Math.abs(g2)+1),o1=0,p1=0,o2=0,p2=0,k,ex,ey,dd,r0;
+    for(k=0;k<ns;k++){ex=sx[k]-cx;ey=sy[k]-cy;dd=Math.sqrt(ex*ex+ey*ey);if(dd<1.6*bs)return false;r0=dd-0.75*bs;mg+=sm[k]*bs/(r0*r0);}
+    for(var c4=0;c4<4;c4++){var X0=c4&1?xb:xa,Y0=c4&2?yb:ya,A1=0,A2=0;
+      for(k=0;k<ns;k++){var pa=X0-sx[k],pb=Y0-sy[k],ia=sm[k]/(pa*pa+pb*pb);A1+=pa*ia;A2+=pb*ia;}
+      var U1=g1*X0-A1-c1,U2=g2*Y0-A2-c2;if(U1>Lw+mg)o1++;else if(U1<-Lw-mg)p1++;if(U2>Lw+mg)o2++;else if(U2<-Lw-mg)p2++;}
+    return o1===4||p1===4||o2===4||p2===4;}
+  /* recursive culling inside each block: split until the four mapped corners prove no ray can reach the window
+     (exact bound: Jacobian ≤ |g1|+|g2|+1 plus Σ m/r² from nearby stars), or until 16×16 rays, then shoot */
+  var pxa=0,pya=0,iw=0,ih=0,RES1=0,RES2=0,LEAF=16;
+  function defl(X0,Y0){var u=(X0-pxa)*iw,v=(Y0-pya)*ih,A1=(cf[0]*(1-u)+cf[2]*u)*(1-v)+(cf[4]*(1-u)+cf[6]*u)*v,A2=(cf[1]*(1-u)+cf[3]*u)*(1-v)+(cf[5]*(1-u)+cf[7]*u)*v;
+    for(var m1=0;m1<nn;m1++){var s1=near[m1],pa=X0-sx[s1],pb=Y0-sy[s1],ia=sm[s1]/(pa*pa+pb*pb);A1+=pa*ia;A2+=pb*ia;}RES1=A1;RES2=A2;}
+  function rec(i0,i1,j0,j1){
+    var xa=x1m+i0*dx,xb=x1m+i1*dx,ya=x2m+j0*dy,yb=x2m+j1*dy,bs=Math.max(xb-xa,yb-ya),cx=(xa+xb)/2,cy=(ya+yb)/2,mg=bs*(Math.abs(g1)+Math.abs(g2)+1),cull=true;
+    for(var m0=0;m0<nn;m0++){var s0=near[m0],ex0=sx[s0]-cx,ey0=sy[s0]-cy,dd=Math.sqrt(ex0*ex0+ey0*ey0);if(dd<1.6*bs){cull=false;break;}var r0=dd-0.75*bs;mg+=sm[s0]*bs/(r0*r0);}
+    if(cull){var o1=0,o2=0,p1=0,p2=0;for(var c4=0;c4<4;c4++){var X0=c4&1?xb:xa,Y0=c4&2?yb:ya;defl(X0,Y0);var U1=g1*X0-RES1-c1,U2=g2*Y0-RES2-c2;
+        if(U1>Lw+mg)o1++;else if(U1<-Lw-mg)p1++;if(U2>Lw+mg)o2++;else if(U2<-Lw-mg)p2++;}
+      if(o1===4||p1===4||o2===4||p2===4)return;}
+    var wi=i1-i0,wj=j1-j0;
+    if(wi>LEAF||wj>LEAF){var im=(i0+i1)>>1,jm=(j0+j1)>>1;
+      if(wi>LEAF&&wj>LEAF){rec(i0,im,j0,jm);rec(im,i1,j0,jm);rec(i0,im,jm,j1);rec(im,i1,jm,j1);}
+      else if(wi>LEAF){rec(i0,im,j0,j1);rec(im,i1,j0,j1);}else{rec(i0,i1,j0,jm);rec(i0,i1,jm,j1);}return;}
+    shot+=wi*wj;
+    for(var j=j0;j<j1;j++){var x2=x2m+(j+0.5)*dy,v=(x2-pya)*ih;
+      var lx0=cf[0]+(cf[4]-cf[0])*v,ly0=cf[1]+(cf[5]-cf[1])*v,lx1=cf[2]+(cf[6]-cf[2])*v,ly1=cf[3]+(cf[7]-cf[3])*v;
+      for(var i=i0;i<i1;i++){var x1=x1m+(i+0.5)*dx,u=(x1-pxa)*iw,a1=lx0+(lx1-lx0)*u,a2=ly0+(ly1-ly0)*u;
+        for(var m=0;m<nn;m++){var s=near[m],p=x1-sx[s],qq=x2-sy[s],ir2=sm[s]/(p*p+qq*qq);a1+=p*ir2;a2+=qq*ir2;}
+        var X=(g1*x1-a1-c1+Lw)*sc,Y=(g2*x2-a2-c2+Lw)*sc;
+        if(X>=0&&X<N&&Y>=0&&Y<N)c[(Y|0)*N+(X|0)]+=1;}}}
+  for(var J0=0;J0<ny;J0+=SB){var J1=Math.min(ny,J0+SB);for(var I0=0;I0<nx;I0+=SB){var I1=Math.min(nx,I0+SB);
+  if(SB>B&&superCull(x1m+I0*dx,x1m+I1*dx,x2m+J0*dy,x2m+J1*dy))continue;
+  for(var j0=J0;j0<J1;j0+=B){var j1=Math.min(J1,j0+B),ya=x2m+j0*dy,yb=x2m+j1*dy,cy=(ya+yb)/2;
+    for(var i0=I0;i0<I1;i0+=B){var i1=Math.min(I1,i0+B),xa=x1m+i0*dx,xb=x1m+i1*dx,cx=(xa+xb)/2,nn=0;
       for(var q=0;q<8;q++)cf[q]=0;
       for(var k=0;k<ns;k++){var ex=sx[k]-cx,ey=sy[k]-cy;if(ex*ex+ey*ey<Rc2){near[nn++]=k;continue;}
         for(var cc=0;cc<4;cc++){var px=(cc&1?xb:xa)-sx[k],py=(cc&2?yb:ya)-sy[k],ir=sm[k]/(px*px+py*py);cf[cc*2]+=px*ir;cf[cc*2+1]+=py*ir;}}
-      /* skip blocks whose rays cannot reach the window: all four mapped corners on one side, no star close enough to fold the map */
-      var bs=Math.max(xb-xa,yb-ya),mg=bs*(Math.abs(g1)+Math.abs(g2)+1),cull=true,o1=0,o2=0,p1=0,p2=0;
-      for(var m0=0;m0<nn&&cull;m0++){var s0=near[m0],ex0=sx[s0]-cx,ey0=sy[s0]-cy,dd=Math.sqrt(ex0*ex0+ey0*ey0);if(dd<1.6*bs)cull=false;else{var r0=dd-0.75*bs;mg+=sm[s0]*bs/(r0*r0);}}
-      if(cull){for(var c4=0;c4<4;c4++){var X0=c4&1?xb:xa,Y0=c4&2?yb:ya,A1=cf[c4*2],A2=cf[c4*2+1];
-          for(var m1=0;m1<nn;m1++){var s1=near[m1],pa=X0-sx[s1],pb=Y0-sy[s1],ia=sm[s1]/(pa*pa+pb*pb);A1+=pa*ia;A2+=pb*ia;}
-          var U1=g1*X0-A1-c1,U2=g2*Y0-A2-c2;if(U1>Lw+mg)o1++;else if(U1<-Lw-mg)p1++;if(U2>Lw+mg)o2++;else if(U2<-Lw-mg)p2++;}
-        if(o1===4||p1===4||o2===4||p2===4)continue;}
-      shot+=(i1-i0)*(j1-j0);
-      var iw=1/(xb-xa),ih=1/(yb-ya);
-      for(var j=j0;j<j1;j++){var x2=x2m+(j+0.5)*dy,v=(x2-ya)*ih;
-        var lx0=cf[0]+(cf[4]-cf[0])*v,ly0=cf[1]+(cf[5]-cf[1])*v,lx1=cf[2]+(cf[6]-cf[2])*v,ly1=cf[3]+(cf[7]-cf[3])*v;
-        for(var i=i0;i<i1;i++){var x1=x1m+(i+0.5)*dx,u=(x1-xa)*iw,a1=lx0+(lx1-lx0)*u,a2=ly0+(ly1-ly0)*u;
-          for(var m=0;m<nn;m++){var s=near[m],p=x1-sx[s],qq=x2-sy[s],ir2=sm[s]/(p*p+qq*qq);a1+=p*ir2;a2+=qq*ir2;}
-          var X=(g1*x1-a1-c1+Lw)*sc,Y=(g2*x2-a2-c2+Lw)*sc;
-          if(X>=0&&X<N&&Y>=0&&Y<N)c[(Y|0)*N+(X|0)]+=1;}}}}
+      pxa=xa;pya=ya;iw=1/(xb-xa);ih=1/(yb-ya);rec(i0,i1,j0,j1);}}}}
   var f=dx*dy/((2*Lw/N)*(2*Lw/N));for(var e=0;e<c.length;e++)c[e]*=f;
   return {c:c,rays:shot};}
 
