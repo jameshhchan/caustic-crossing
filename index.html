@@ -27,13 +27,21 @@
 :root[data-ct="daylight"]{--bg:#f3f4f8;--panel:#ffffff;--panel2:#eceff5;--line:#d3d8e3;--fg:#1b2030;--muted:#5d6680;--data:#6b7489;--model:#c96f12;--truth:#11141c;--good:#0f8aa0;color-scheme:light}
 html,body{background:var(--bg);color:var(--fg)}
 body{font-family:var(--body);font-size:14px;line-height:1.5}
-.page{max-width:1440px;margin:0 auto;padding-block:12px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+.page{max-width:1440px;margin:0 auto;padding-block:10px 8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:12px}
+.page:has(#modebar:not([hidden])) .mapwrap{width:min(100%,max(250px,calc(100vh - 470px)))}
+.page:has(#modebar:not([hidden])) #lc{height:clamp(130px,calc(100vh - 665px),360px)}
+body.custom .page:has(#modebar:not([hidden])) #lc{height:clamp(120px,calc(100vh - 730px),300px)}
+.hctl .btn.aboutbtn{text-decoration:none;color:var(--fg);background:transparent;padding:7px 10px;font-weight:500}.hctl .btn.aboutbtn:hover{color:var(--model)}
+.foot{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:7px}
+.foot a{color:var(--muted);text-decoration:none;border-bottom:1px dotted currentColor}.foot a:hover{color:var(--fg)}
+.foot .copy{margin-left:auto}
 header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px;border-bottom:1px solid var(--line);padding-bottom:10px}
-header.top>div:first-child{display:flex;align-items:baseline;gap:6px 16px;flex-wrap:wrap}
+header.top>div:first-child{display:flex;align-items:baseline;gap:6px 16px;flex:1 1 420px;min-width:0}
+header.top>div:first-child h1{flex:none}
 h1{font-family:var(--display);font-weight:600;font-size:clamp(20px,2.4vw,26px);letter-spacing:-.01em;margin:0;line-height:1.1}
 h1 span{color:var(--model);font-style:italic;font-weight:400}
-.tag{color:var(--muted);margin:0;max-width:60ch}
-.hctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.tag{color:var(--muted);margin:0;max-width:96ch}
+.hctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;flex:none}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .seg button{background:transparent;color:var(--muted);border:0;padding:8px 14px;font:500 13px var(--body);cursor:pointer;border-right:1px solid var(--line)}
 .seg button:last-child{border-right:0}
@@ -53,7 +61,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--model);outline-
 .head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
 h2{font-family:var(--display);font-weight:400;font-size:12px;letter-spacing:.09em;text-transform:uppercase;margin:0;color:var(--muted)}
 .mono{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
-.mapwrap{position:relative;width:min(100%,max(300px,calc(100vh - 385px)));margin-inline:auto;aspect-ratio:1;max-width:100%;border-radius:6px;overflow:hidden;background:#05060c}
+.mapwrap{position:relative;width:min(100%,max(250px,calc(100vh - 420px)));margin-inline:auto;aspect-ratio:1;max-width:100%;border-radius:6px;overflow:hidden;background:#05060c}
 .mapwrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
 .mapwrap canvas.dragging{cursor:grabbing}
 .zoomctl{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:4px;z-index:2}
@@ -72,7 +80,7 @@ h2{font-family:var(--display);font-weight:400;font-size:12px;letter-spacing:.09e
 .shot canvas{width:100%;aspect-ratio:1;max-width:100%;border-radius:4px;border:1px solid var(--line);display:block}
 .shot[aria-current="true"] canvas{border-color:var(--model);box-shadow:0 0 0 1px var(--model)}
 .shot[aria-current="true"]{color:var(--model)}
-#lc{width:100%;height:clamp(180px,calc(100vh - 590px),360px);display:block}
+#lc{width:100%;height:clamp(140px,calc(100vh - 615px),360px);display:block}
 .legend{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
 #campaign{margin-left:auto;font-size:11.5px}
 .bandleg{display:inline-flex;gap:4px;align-items:center}
@@ -177,6 +185,8 @@ td.y{color:var(--model)} td.t{color:var(--truth);font-weight:700}
 .vo .seg button,#modeSeg button{padding:5px 10px;font-size:12px}
 .setup{display:flex;flex-direction:column;gap:7px;background:var(--panel2);border-radius:8px;padding:9px 12px}
 .stitle{font-family:var(--display);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--model)}
+.stitle .winpick{font-family:var(--body);font-size:12.5px;letter-spacing:0;text-transform:none;color:var(--muted);margin-left:12px}
+.stitle .winpick select{font:12px var(--mono);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:5px;padding:1px 4px;margin:0 2px}
 .stitle .tagline{font-family:var(--body);font-size:12.5px;letter-spacing:0;text-transform:none;color:var(--muted);font-style:italic;margin-left:8px}
 #levelSeg{flex-wrap:wrap}
 #levelSeg button{padding:6px 9px}
@@ -184,7 +194,7 @@ td.y{color:var(--model)} td.t{color:var(--truth);font-weight:700}
 .fitchips{display:inline-flex;gap:6px;flex-wrap:wrap}
 .fitchips span{font-size:12.5px;border:1px solid var(--model);color:var(--model);border-radius:6px;padding:4px 9px}
 .fitchips span.bd{border-color:var(--line);color:var(--muted)}
-body.custom #lc{height:clamp(140px,calc(100vh - 690px),300px)}
+body.custom #lc{height:clamp(130px,calc(100vh - 680px),300px)}
 #bandSeg{margin-left:4px}
 .srow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .slab{font-family:var(--mono);font-size:12px;color:var(--muted);width:84px;flex:none}
@@ -203,10 +213,11 @@ body.custom #lc{height:clamp(140px,calc(100vh - 690px),300px)}
   <header class="top">
     <div>
       <h1>Caustic <span>Crossing</span></h1>
-      <p class="tag">Read a quasar's accretion disk from its microlensing light curve.</p>
+      <p class="tag">Stars in a distant galaxy sweep their caustics across a quasar. Map its black hole's disk from the flicker.</p>
     </div>
     <div class="hctl">
       <label class="cmsel">Theme <select id="themeSel" aria-label="Page colour theme"><option value="lab">Lab</option><option value="daylight">Daylight</option></select></label>
+      <a class="btn aboutbtn" href="https://github.com/jameshhchan/caustic-crossing" target="_blank" rel="noopener" title="Project page on GitHub">About ↗</a>
       <div class="seg" role="group" aria-label="Play mode" id="playSeg">
         <button data-p="free" aria-pressed="true">Free play</button>
         <button data-p="daily" aria-pressed="false">Daily</button>
@@ -255,7 +266,7 @@ body.custom #lc{height:clamp(140px,calc(100vh - 690px),300px)}
       <section class="card">
         <div class="topband">
         <div class="setup" aria-label="Level setup">
-          <div class="stitle">Level setup <span class="tagline" id="lvTag"></span></div>
+          <div class="stitle">Level setup <span class="tagline" id="lvTag"></span><span class="winpick" id="rowWin" title="Each event draws an observing window between these lengths">Window <select id="wMin" aria-label="Shortest observing window"></select> to <select id="wMax" aria-label="Longest observing window"></select></span></div>
           <div class="srow"><span class="slab">Difficulty</span>
             <div class="seg" role="group" aria-label="Difficulty: pick one or more levels, or Custom" id="levelSeg">
               <button data-l="auto" aria-pressed="true">On track</button>
@@ -267,10 +278,6 @@ body.custom #lc{height:clamp(140px,calc(100vh - 690px),300px)}
             </div>
           </div>
           <div class="srow" id="fitNow"><span class="slab">This event</span><span class="fitchips" id="fitChips"></span></div>
-          <div class="srow" id="rowWin" title="Each event draws an observing window between these lengths"><span class="slab">Window</span>
-            <label class="cmsel">from <select id="wMin" aria-label="Shortest observing window"></select></label>
-            <label class="cmsel">to <select id="wMax" aria-label="Longest observing window"></select></label>
-          </div>
           <div class="srow" id="rowParams"><span class="slab">Parameters</span>
             <span class="fixed">r½</span>
             <div class="seg" role="group" aria-label="Extra parameters to fit" id="modeSeg">
@@ -323,6 +330,12 @@ body.custom #lc{height:clamp(140px,calc(100vh - 690px),300px)}
     </div>
   </div>
 
+  <footer class="foot">
+    <a href="https://jameshhchan.github.io/quasar-microlensing/" target="_blank" rel="noopener">Quasar Microlensing Lab ↗</a>
+    <span>Questions? <a href="mailto:jchan@amnh.org">jchan@amnh.org</a></span>
+    <span>Supported by <a href="https://futurelens-cuny.github.io/" target="_blank" rel="noopener">FutureLens</a></span>
+    <span class="copy">© 2026 <a href="https://sites.google.com/view/jameshhchan/home" target="_blank" rel="noopener">James Chan</a>. All rights reserved.</span>
+  </footer>
 </div>
 
 <script>
@@ -863,7 +876,7 @@ function drawLC(){
   const X=t=>ml+(t/100)*(w-ml-mr),Y=m=>mt+((m-lo)/(hi-lo))*ph;
   const grid=css("--line"),mut=css("--muted");
   ctx.font=`${11*d}px "IBM Plex Mono",monospace`;ctx.fillStyle=mut;ctx.strokeStyle=grid;ctx.lineWidth=d;
-  const step=niceStep((hi-lo)/Math.max(2.5,Math.min(5,ph/(42*d))));ctx.textAlign="right";ctx.textBaseline="middle";
+  const step=niceStep((hi-lo)/Math.max(1.2,Math.min(5,ph/(36*d))));ctx.textAlign="right";ctx.textBaseline="middle";
   for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step){const y=Y(v);ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(w-mr,y);ctx.stroke();ctx.fillText(Math.abs(v)<1e-9?"0":(v>0?"+":"")+v.toFixed(step<0.1?2:1),ml-6*d,y);}
   ctx.textAlign="center";ctx.textBaseline="top";{const TT=timeTicks();TT.ticks.forEach((q,i)=>{const last=i===TT.ticks.length-1;ctx.fillText(last?q.lab+" "+TT.unit:q.lab,X(q.t)-(last&&q.t>95?10*d:0),h-mb+8*d);});}
   ctx.save();ctx.translate(10*d,mt+ph/2);ctx.rotate(-Math.PI/2);ctx.textBaseline="middle";ctx.fillText("Δm (mag)",0,0);ctx.restore();
@@ -1037,7 +1050,6 @@ function doReveal(){
   const sz=g(Math.log(player.rh/truth.rh)/tol("rh",0.15));comp.push([sz,.3]);
   const fr1=x=>x<100?x.toFixed(1):x.toFixed(0);
   rows.push(["Half-light radius (2500 Å)",fr1(player.rh)+" r_g",fr1(truth.rh)+" r_g",sz,"rh"]);
-  rows.push(["… in light-days",fmtLd(ltd(player.rh)),fmtLd(ltd(truth.rh))+` (thin disk ${fmtLd(ltd(PHYS.rhPred))})`,null]);
   if(free.includes("inc")){const s=g((player.inc-truth.inc)/tol("inc",12));comp.push([s,.2]);rows.push(["Inclination",player.inc.toFixed(0)+"°",truth.inc.toFixed(0)+"°",s,"inc"]);
     /* θ is scored over 360° only when both disks have GR and the data can tell the approaching side */
     const P=player.gr&&truth.gr&&sensitivity("side")>=4?360:180;let dp=Math.abs(player.pa-truth.pa)%P;dp=Math.min(dp,P-dp);const sp=truth.inc<10?1:g(dp/tol("pa",15));comp.push([sp,.15]);rows.push(["Orientation",player.pa.toFixed(0)+"°",truth.pa.toFixed(0)+"°",sp,"pa"]);}
@@ -1110,7 +1122,7 @@ $("hintBtn").addEventListener("click",()=>{
   hints.push({k:"data"});const li=document.createElement("li");li.textContent=msg;$("hintList").appendChild(li);$("hintBox").hidden=false;
 });
 function syncSetupRows(){
-  $("rowParams").hidden=!custom;$("rowWin").hidden=!custom;document.body.classList.toggle("custom",custom);requestAnimationFrame(()=>{if(data)drawLC();});$("fitNow").hidden=custom;
+  $("rowParams").hidden=!custom;$("rowWin").hidden=!custom;$("lvTag").hidden=custom;document.body.classList.toggle("custom",custom);requestAnimationFrame(()=>{if(data)drawLC();});$("fitNow").hidden=custom;
   const names={geom:"i, θ",isco:"r_in",gr:"GR",beta:"slope β"};
   $("fitChips").innerHTML=["<span>r½</span>",...GROUPS.filter(k=>opts[k]).map(k=>`<span>${names[k]}</span>`),
     `<span class="bd">${opts.nb==="1"?"1 band (r)":opts.nb==="3"?"3 bands (gri)":"6 bands (ugrizy)"}</span>`].join("");
