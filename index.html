@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Caustic Crossing: fit a quasar accretion disk to 100 days of microlensing.">
+<meta name="description" content="Caustic Crossing: read a quasar's accretion disk from its microlensing light curve.">
 <style>:root{color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif} img{max-width:100%} [hidden]{display:none!important} *,*::before,*::after{box-sizing:border-box}</style>
 <title>Caustic Crossing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,11 +46,19 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--model);outline-
 .grid>div{gap:14px!important}
 @media (max-width:980px){.grid{grid-template-columns:minmax(0,1fr)}.mapwrap{width:100%}#lc{height:260px}}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:9px;min-width:0}
+.evcard{font-size:11.5px;color:var(--fg);margin:-2px 0 8px;display:grid;gap:2px}
+.evcard>div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.evcard b{font-weight:500;color:var(--muted);display:inline-block;width:52px;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px}
+.evcard i{font-style:normal;color:var(--muted)}
 .head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
 h2{font-family:var(--display);font-weight:400;font-size:12px;letter-spacing:.09em;text-transform:uppercase;margin:0;color:var(--muted)}
 .mono{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .mapwrap{position:relative;width:min(100%,max(300px,calc(100vh - 385px)));margin-inline:auto;aspect-ratio:1;max-width:100%;border-radius:6px;overflow:hidden;background:#05060c}
-.mapwrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.mapwrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.mapwrap canvas.dragging{cursor:grabbing}
+.zoomctl{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:4px;z-index:2}
+.zoomctl button{width:30px;height:28px;border-radius:6px;border:1px solid rgba(233,230,221,.35);background:rgba(6,8,14,.65);color:#e6e9f2;font:600 14px var(--mono);cursor:pointer;padding:0}
+.zoomctl button:hover{border-color:#e6e9f2}
 .loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(5,6,12,.86);font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;padding:20px}
 .bar{width:60%;height:3px;background:var(--line);border-radius:2px;overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--model);transition:width .15s}
@@ -103,6 +111,7 @@ h2{font-family:var(--display);font-weight:400;font-size:12px;letter-spacing:.09e
 .topband .setup{flex:1 1 380px}
 .actbtns{display:flex;flex-direction:column;gap:8px;justify-content:center;flex:0 0 auto}
 .actbtns .btn{width:100%}
+.subbtns{display:flex;gap:8px}.subbtns .btn{flex:1;width:auto;white-space:nowrap}
 .actbtns{min-width:180px;justify-content:stretch}
 #revealBtn{flex:1;min-height:64px;background:var(--model);color:var(--bg);font-size:16px;font-weight:700;letter-spacing:.01em;border-radius:8px;box-shadow:0 4px 18px color-mix(in srgb,var(--model) 25%,transparent)}
 #revealBtn:not(:disabled):hover{filter:brightness(1.08)}
@@ -157,6 +166,7 @@ td.y{color:var(--model)} td.t{color:var(--truth);font-weight:700}
 .evrate .stars{letter-spacing:1px!important;font-size:13px!important}
 .evrate .stars{letter-spacing:2px;font-size:15px}
 .evrate .stars i{font-style:normal;opacity:.3}
+.evrate .wchip{font-family:var(--mono);font-size:12px;white-space:nowrap;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 8px}
 .evrate .pmult{font-family:var(--mono);font-size:12px;white-space:nowrap;color:var(--model);border:1px dashed var(--model);border-radius:6px;padding:2px 8px}
 .evrate .lvnote{font-size:12px;color:var(--muted);font-style:italic}
 .evrate .why{font-family:var(--mono);font-size:12px;color:var(--muted)}
@@ -174,7 +184,7 @@ td.y{color:var(--model)} td.t{color:var(--truth);font-weight:700}
 .fitchips{display:inline-flex;gap:6px;flex-wrap:wrap}
 .fitchips span{font-size:12.5px;border:1px solid var(--model);color:var(--model);border-radius:6px;padding:4px 9px}
 .fitchips span.bd{border-color:var(--line);color:var(--muted)}
-body.custom #lc{height:clamp(150px,calc(100vh - 650px),330px)}
+body.custom #lc{height:clamp(140px,calc(100vh - 690px),300px)}
 #bandSeg{margin-left:4px}
 .srow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .slab{font-family:var(--mono);font-size:12px;color:var(--muted);width:84px;flex:none}
@@ -193,7 +203,7 @@ body.custom #lc{height:clamp(150px,calc(100vh - 650px),330px)}
   <header class="top">
     <div>
       <h1>Caustic <span>Crossing</span></h1>
-      <p class="tag">Fit a quasar accretion disk to 100 days of microlensing.</p>
+      <p class="tag">Read a quasar's accretion disk from its microlensing light curve.</p>
     </div>
     <div class="hctl">
       <label class="cmsel">Theme <select id="themeSel" aria-label="Page colour theme"><option value="lab">Lab</option><option value="daylight">Daylight</option></select></label>
@@ -209,12 +219,13 @@ body.custom #lc{height:clamp(150px,calc(100vh - 650px),330px)}
 
   <div class="grid">
     <section class="card">
-      <div class="head"><h2>Source-plane map</h2><span class="mono" id="mapMeta"></span></div>
+      <div class="head"><h2>Source-plane map</h2></div>
+      <div class="evcard mono"><div id="cardQ"></div><div id="cardL"></div></div>
       <div class="mapwrap">
-        <canvas id="map" aria-label="Evolving magnification map centred on the quasar"></canvas>
+        <canvas id="map" aria-label="Evolving magnification map centred on the quasar. Scroll or pinch to zoom, drag to pan, double-click to reset."></canvas>
+        <div class="zoomctl"><button id="zIn" aria-label="Zoom in" title="Zoom in (or scroll)">+</button><button id="zOut" aria-label="Zoom out" title="Zoom out">−</button><button id="zReset" aria-label="Reset zoom" title="Reset (or double-click)">1×</button></div>
         <div class="loading" id="loading"><div id="loadTxt">Shooting rays through the star field…</div><div class="bar"><i id="loadBar"></i></div></div>
       </div>
-      <div class="mono" id="lensTxt" style="color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
       <div class="maprow"><div class="cbar mono"><span id="cbLo">μ 0.5</span><div class="grad" id="cbGrad"></div><span id="cbHi">μ 40</span></div>
       <div class="viewopts"><span class="mapband" id="mapBand" aria-label="Band shown on the map"></span>
         <label class="cmsel">Disk <select id="diskSel" aria-label="How to draw the disk on the map"><option value="image">Image</option><option value="outline">Outline</option><option value="both" selected>Both</option></select></label>
@@ -256,11 +267,15 @@ body.custom #lc{height:clamp(150px,calc(100vh - 650px),330px)}
             </div>
           </div>
           <div class="srow" id="fitNow"><span class="slab">This event</span><span class="fitchips" id="fitChips"></span></div>
+          <div class="srow" id="rowWin" title="Each event draws an observing window between these lengths"><span class="slab">Window</span>
+            <label class="cmsel">from <select id="wMin" aria-label="Shortest observing window"></select></label>
+            <label class="cmsel">to <select id="wMax" aria-label="Longest observing window"></select></label>
+          </div>
           <div class="srow" id="rowParams"><span class="slab">Parameters</span>
             <span class="fixed">r½</span>
             <div class="seg" role="group" aria-label="Extra parameters to fit" id="modeSeg">
               <button id="m-geom" data-o="geom" data-n="i, θ" aria-pressed="false">+ i, θ</button>
-              <button id="m-isco" data-o="isco" data-n="ISCO" aria-pressed="false">+ ISCO</button>
+              <button id="m-isco" data-o="isco" data-n="r_in" aria-pressed="false">+ r_in</button>
               <button id="m-gr" data-o="gr" data-n="GR" aria-pressed="false">+ GR</button>
               <button id="m-beta" data-o="beta" data-n="slope" aria-pressed="false" title="Temperature slope β, T ∝ r^−β">+ slope</button>
             </div>
@@ -272,22 +287,21 @@ body.custom #lc{height:clamp(150px,calc(100vh - 650px),330px)}
           </div>
         </div>
         <div class="actbtns">
-            <button class="btn ghost" id="hintBtn">Hint <span class="mono" id="hintCost">−5 pts</span></button>
-            <button class="btn" id="revealBtn">Lock in &amp; reveal</button>
+            <div class="subbtns"><button class="btn ghost" id="hintBtn">Hint <span class="mono" id="hintCost">−5 pts</span></button><button class="btn ghost" id="skipBtn" title="Pass on this event: no points gained or lost (S)">Skip ↷</button></div>
+            <button class="btn" id="revealBtn" title="Enter">Lock in &amp; reveal</button>
           </div>
         </div>
         <div class="modelgrid">
           <div class="ctls">
-            <div class="ctl" id="c-rh"><label for="s-rh" id="lbl-rh">Half-light r½<small>r band</small></label><output id="o-rh"></output><input type="range" id="s-rh" min="6" max="60" step="0.5"></div>
+            <div class="ctl" id="c-rh"><label for="s-rh" id="lbl-rh">Half-light r½<small>2500 Å</small></label><output id="o-rh"></output><input type="range" id="s-rh" min="0.6" max="2.6" step="0.002"></div>
             <div class="ctl" id="c-inc"><label for="s-inc">Inclination<small>i</small></label><output id="o-inc"></output><input type="range" id="s-inc" min="0" max="80" step="1"></div>
-            <div class="ctl" id="c-pa"><label for="s-pa">Orientation<small>θ</small></label><output id="o-pa"></output><input type="range" id="s-pa" min="0" max="179" step="1"></div>
-            <div class="ctl" id="c-rin"><label for="s-rin">ISCO<small>r_in</small></label><output id="o-rin"></output><input type="range" id="s-rin" min="1.25" max="8.95" step="0.05"></div>
+            <div class="ctl" id="c-pa"><label for="s-pa">Orientation<small>θ</small></label><output id="o-pa"></output><input type="range" id="s-pa" min="0" max="179" step="1" title="With GR on, θ runs 0–360°: it also points to the approaching side"></div>
+            <div class="ctl" id="c-rin"><label for="s-rin">Inner edge<small>r_in</small></label><output id="o-rin"></output><input type="range" id="s-rin" min="1.25" max="12" step="0.05"></div>
             <div class="ctl" id="c-beta"><label for="s-beta">Slope β<small>T ∝ r^−β</small></label><output id="o-beta"></output><input type="range" id="s-beta" min="0.3" max="1.5" step="0.01"></div>
-            <div class="ctl" id="c-gr"><label>GR side<small>approaching</small></label><output id="o-gr"></output>
+            <div class="ctl" id="c-gr"><label>GR effects<small>Doppler + redshift</small></label><output id="o-gr"></output>
               <div class="seg" role="group" aria-label="GR effects">
                 <button id="g0" data-g="0" aria-pressed="true">Off</button>
-                <button id="g1" data-g="1" aria-pressed="false">θ</button>
-                <button id="g2" data-g="-1" aria-pressed="false">θ+180°</button>
+                <button id="g1" data-g="1" aria-pressed="false">On</button>
               </div>
             </div>
           </div>
@@ -315,9 +329,22 @@ body.custom #lc{height:clamp(150px,calc(100vh - 650px),330px)}
 "use strict";
 /* Source-centred dynamic map: each frame is ray-shot in a window centred on the quasar at that day.
    Bulk transverse velocity moves the window (caustics stream past); stars carry only random motions. */
-const PX=2/512, NW=288, LW=NW*PX/2, VIEW=272, RG=0.0025, PXPERRG=RG/PX, KMAX=110;
-const NF=41, NS=201, D2R=Math.PI/180;
+const NW=288, VIEW=272, KMAX=110;
+let PX=2/512, LW=NW*PX/2, RG=0.0025, PXPERRG=RG/PX;   // set per event from the physical system (PX, LW in R_E; RG = r_g/R_E)
+let NF=41, NS=201;   // map frames and light-curve samples, set per event
+const D2R=Math.PI/180;
 /* each event draws its own lens: total convergence κ, fraction in stars, shear γ, source speed, star dispersion */
+/* physical system → map scale: ~12 px per predicted r-band half-light radius, coarser only when needed to keep
+   star motion ≤ 2.5 px per frame with ≤ 101 frames; light curve sampled every ~1.2 px of source motion */
+function setPhys(P,lens){
+  PHYS=P;lens.len=P.L;lens.sig=P.rsig*P.L/100/Math.SQRT2;
+  const px=Math.max(P.rhoR/12,P.rsig*P.L/(2.5*100),P.L/(60*100));
+  NF=Math.min(101,Math.max(41,Math.ceil(P.rsig*P.L/px/2.5)+1,Math.ceil(P.L/px/60)+1));
+  NS=Math.min(501,Math.max(201,Math.ceil(P.L/px/1.2)+1));
+  PX=px;LW=NW*PX/2;RG=P.eps;PXPERRG=RG/PX;lens.rpp=P.rhoR/PX<9?20:12;
+  PREVFOV=nice125(4*P.rhPred*Math.pow(lr("r"),4/3));
+}
+let PREVFOV=75;
 function randLens(rng){
   for(;;){const kt=0.2+rng()*0.55,g=0.1+rng()*0.6,a=1-kt-g,b=1-kt+g;
     if(Math.abs(a)<0.15||Math.abs(b)<0.15)continue;               // skip near-critical lenses (too many rays)
@@ -327,33 +354,90 @@ function randLens(rng){
 const $=id=>document.getElementById(id);
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function gauss(r){let u=0;while(u===0)u=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*r())}
+/* Chabrier (2003) single-star IMF, 0.1–1 M☉ (as in the Lab): log-normal per log m, m_c=0.079, σ=0.69 dex.
+   Masses are in units of the mean mass, so R_E is the Einstein radius of an average star. */
+const CHAB_C=Math.exp(-(Math.log10(1/0.079)**2)/(2*0.69*0.69));
+function chabrierLog(m){return m<=1?Math.exp(-((Math.log10(m)-Math.log10(0.079))**2)/(2*0.69*0.69)):CHAB_C*Math.pow(m,-1.3);}
+function chabrierSample(r,m1=1){const pmax=chabrierLog(0.1),l1=Math.log10(m1)+1;for(;;){const m=10**(r()*l1-1);if(r()*pmax<=chabrierLog(m))return m;}}
+const MMEAN=(()=>{let a=0,b=0;for(let i=0;i<4000;i++){const m=10**(i/3999-1),w=chabrierLog(m);a+=w*m;b+=w;}return a/b;})(); // ⟨m⟩ in M☉
+
+/* ======================= PHYSICAL UNITS (shared with the Lab) =======================
+   Each event is a real system: black-hole mass, lens and quasar redshifts, effective transverse speed.
+   Lengths on the map are in R_E of an average (Chabrier) star in the source plane; the disk is in r_g = GM/c².
+   Cosmology: flat ΛCDM, H0 = 70 km/s/Mpc, Ωm = 0.3. Time is real observer-frame time. */
+const C_KMS=299792.458,MPC=3.0857e24,LTDAY=2.59021e15,RG1=1.4766e5,FOURGM_C2=5.906e5;  // cm; r_g and 4GM/c² for 1 M☉
+const WIN_MIN=100,WIN_MAX=3652;   // observing windows: any length from 100 d to 10 yr (log-uniform)
+const WIN_OPTS=[[100,"100 d"],[180,"6 mo"],[365,"1 yr"],[730,"2 yr"],[1096,"3 yr"],[1826,"5 yr"],[2557,"7 yr"],[3652,"10 yr"]];
+let winRange=[WIN_MIN,WIN_MAX];   // Custom only
+function comoving(z){const n=256;let s=0;for(let i=0;i<n;i++){const x=(i+0.5)/n*z;s+=1/Math.sqrt(0.3*(1+x)**3+0.7);}return s*z/n*C_KMS/70;} // Mpc
+function einsteinRadius(zl,zs,m){const Dl=comoving(zl)/(1+zl),Ds=comoving(zs)/(1+zs),Dls=(comoving(zs)-comoving(zl))/(1+zs);
+  return Math.sqrt(FOURGM_C2*m*Ds*Dls/Dl*MPC);}                              // source-plane R_E (cm) for a star of mass m (M☉)
+/* standard thin disk (L/L_Edd = 0.1, η = 0.1): scale radius where kT = hc/λ, half-light radius = 2.44 R_λ; returned in r_g */
+function thinDiskRh(M,lamA){const G=6.674e-8,h=6.626e-27,c=2.998e10,Mdot=0.1*1.26e38*M/(0.1*c*c),lam=lamA*1e-8;
+  return 2.44*Math.cbrt(45*G*lam**4*M*1.989e33*Mdot/(16*Math.PI**6*h*c*c))/(RG1*M);}
+const LREF=2500;   // r½ is quoted at rest-frame 2500 Å
+function drawPhys(rng){
+  const [w0,w1]=custom&&playMode!=="daily"?winRange:[WIN_MIN,WIN_MAX],T=Math.round(w0*Math.pow(w1/w0,rng()));let best=null;
+  for(let i=0;i<500;i++){
+    const zl=0.2+rng()*0.8,z0=Math.max(1,zl+0.4),zs=z0+rng()*(3-z0),M=10**(7+rng()*Math.log10(300)),v=300+rng()*700,rsig=0.3+rng()*0.5;
+    const RE=einsteinRadius(zl,zs,MMEAN),eps=RG1*M/RE,rhPred=thinDiskRh(M,LREF),L=v*1e5*T*86400/RE;
+    const rhoR=rhPred*Math.pow(BANDS.r.l*1e4/(1+zs)/LREF,4/3)*eps;   // predicted r-band half-light radius in R_E
+    const P={T,zl,zs,M,v,rsig,RE,eps,rhPred,L,rhoR,Nd:L/(2*rhoR)};
+    // the window must cover between ~half and ~20 disk diameters, and the disk must stay well inside an Einstein radius
+    const miss=Math.max(P.Nd<0.6?0.6/P.Nd:P.Nd/20,rhoR/0.15,1);
+    if(miss===1)return P;if(!best||miss<best.miss)best={...P,miss};}
+  return best;
+}
+let PHYS=null;
+const tReal=t=>t*(PHYS?PHYS.T:100)/100;                          // internal time runs 0–100 over the window
+function fmtT(t,dec){const d=tReal(t);return (PHYS?PHYS.T:100)<=400?`day ${d.toFixed(dec??1)}`:`yr ${(d/365.25).toFixed(dec??2)}`;}
+function fmtShort(t){const d=tReal(t);return (PHYS?PHYS.T:100)<=400?`day ${Math.round(d)}`:`yr ${+(d/365.25).toFixed(1)}`;}
+function windowName(){const T=PHYS.T,y=T/365.25;return (T<=200?"Close-up":"Survey")+" · "+(T<365?`${T} d`:`${y<3?y.toFixed(1):Math.round(y)} yr`);}
+function timeTicks(){const T=PHYS?PHYS.T:100,yr=T>400,span=yr?Math.round(T/365.25*10)/10:T,st=niceStep(span/5),out=[];
+  for(let v=0;v<=span+1e-9;v+=st)out.push({t:v/span*100,lab:+v.toFixed(3)});return {ticks:out,unit:yr?"yr":"d"};}
+const SUP={"0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹","-":"⁻"};
+function sci(x){const e=Math.floor(Math.log10(x)),m=x/10**e,mr=+m.toFixed(1);return (mr===1?"":mr+"×")+"10"+String(e).split("").map(c=>SUP[c]).join("");}
+const ltd=rg=>rg*RG1*PHYS.M/LTDAY;                                // r_g → light-days
+function fmtLd(x){return x<0.1?x.toFixed(3):x<1?x.toFixed(2):x<10?x.toFixed(1):x.toFixed(0);}
+function nice125(x){const p=10**Math.floor(Math.log10(x)),f=x/p;return (f<2?1:f<5?2:5)*p;}
 
 /* ---------- inverse ray shooting (near stars exact, far stars bilinear per block) ---------- */
-function shootFrame(d){var sx=d.sx,sy=d.sy,ns=sx.length,N=d.N,Lw=d.Lw,c1=d.c1,c2=d.c2,Rc2=2.2*2.2,A=Math.abs(1-d.kt-d.g),Bb=Math.abs(1-d.kt+d.g),g1=1-d.kc-d.g,g2=1-d.kc+d.g;
+function shootFrame(d){var sx=d.sx,sy=d.sy,sm=d.sm,ns=sx.length,N=d.N,Lw=d.Lw,c1=d.c1,c2=d.c2,Rc2=2.2*2.2,A=Math.abs(1-d.kt-d.g),Bb=Math.abs(1-d.kt+d.g),g1=1-d.kc-d.g,g2=1-d.kc+d.g;
   /* locate the image-plane region whose rays land in this window: coarse scan, keep central 98% of hits */
-  var W1=(Lw+Math.abs(c1))/A+5,W2=(Lw+Math.abs(c2))/Bb+5,st=0.07,h1=[],h2=[];
-  for(var yy=-W2;yy<=W2;yy+=st)for(var xx=-W1;xx<=W1;xx+=st){var b1=0,b2=0;
-    for(var z=0;z<ns;z++){var pp=xx-sx[z],qz=yy-sy[z],iz=1/(pp*pp+qz*qz);b1+=pp*iz;b2+=qz*iz;}
-    var u1=g1*xx-b1-c1,u2=g2*yy-b2-c2;if(Math.abs(u1)<Lw*1.2&&Math.abs(u2)<Lw*1.2){h1.push(xx);h2.push(yy);}}
+  /* centre the scan on the expected images: the stars' net pull at the origin shifts them by α0/(1−κ∓γ), which is large for near-critical lenses */
+  var a0x=0,a0y=0;for(var z0=0;z0<ns;z0++){var r0=sx[z0]*sx[z0]+sy[z0]*sy[z0];a0x-=sm[z0]*sx[z0]/r0;a0y-=sm[z0]*sy[z0]/r0;}
+  var As=1-d.kt-d.g,Bs=1-d.kt+d.g,X1c=(c1+a0x)/As,X2c=(c2+a0y)/Bs;
+  var W1=(Lw+1)/A+4,W2=(Lw+1)/Bb+4,st=0.07,h1=[],h2=[];
+  for(var yy=X2c-W2;yy<=X2c+W2;yy+=st)for(var xx=X1c-W1;xx<=X1c+W1;xx+=st){var b1=0,b2=0;
+    for(var z=0;z<ns;z++){var pp=xx-sx[z],qz=yy-sy[z],iz=sm[z]/(pp*pp+qz*qz);b1+=pp*iz;b2+=qz*iz;}
+    var u1=g1*xx-b1-c1,u2=g2*yy-b2-c2,sl=Lw*1.2+0.25;if(Math.abs(u1)<sl&&Math.abs(u2)<sl){h1.push(xx);h2.push(yy);}}   // generous slack: small windows can fall between scan points
   h1.sort(function(a,b){return a-b});h2.sort(function(a,b){return a-b});
   function pc(a,f){return a.length?a[Math.min(a.length-1,Math.floor(f*a.length))]:0;}
-  var lo1=pc(h1,0.01)-0.4,hi1=pc(h1,0.99)+0.4,lo2=pc(h2,0.01)-0.4,hi2=pc(h2,0.99)+0.4;
-  var nx=Math.round((hi1-lo1)*d.dens),ny=Math.round((hi2-lo2)*d.dens),x1m=lo1,x2m=lo2,dx=(hi1-lo1)/nx,dy=(hi2-lo2)/ny,B=Math.max(8,Math.round(0.2*d.dens));
+  var lo1=pc(h1,0.002)-1,hi1=pc(h1,0.998)+1,lo2=pc(h2,0.002)-1,hi2=pc(h2,0.998)+1;
+  var nx=Math.round((hi1-lo1)*d.dens),ny=Math.round((hi2-lo2)*d.dens),x1m=lo1,x2m=lo2,dx=(hi1-lo1)/nx,dy=(hi2-lo2)/ny,B=Math.max(8,Math.round(Math.min(0.2,Math.max(Lw/3,0.004))*d.dens)),shot=0;   // blocks ~ a third of the window, so culling stays tight
   var c=new Float32Array(N*N),sc=N/(2*Lw),near=new Int32Array(ns),cf=new Float64Array(8);
   for(var j0=0;j0<ny;j0+=B){var j1=Math.min(ny,j0+B),ya=x2m+j0*dy,yb=x2m+j1*dy,cy=(ya+yb)/2;
     for(var i0=0;i0<nx;i0+=B){var i1=Math.min(nx,i0+B),xa=x1m+i0*dx,xb=x1m+i1*dx,cx=(xa+xb)/2,nn=0;
       for(var q=0;q<8;q++)cf[q]=0;
       for(var k=0;k<ns;k++){var ex=sx[k]-cx,ey=sy[k]-cy;if(ex*ex+ey*ey<Rc2){near[nn++]=k;continue;}
-        for(var cc=0;cc<4;cc++){var px=(cc&1?xb:xa)-sx[k],py=(cc&2?yb:ya)-sy[k],ir=1/(px*px+py*py);cf[cc*2]+=px*ir;cf[cc*2+1]+=py*ir;}}
+        for(var cc=0;cc<4;cc++){var px=(cc&1?xb:xa)-sx[k],py=(cc&2?yb:ya)-sy[k],ir=sm[k]/(px*px+py*py);cf[cc*2]+=px*ir;cf[cc*2+1]+=py*ir;}}
+      /* skip blocks whose rays cannot reach the window: all four mapped corners on one side, no star close enough to fold the map */
+      var bs=Math.max(xb-xa,yb-ya),mg=bs*(Math.abs(g1)+Math.abs(g2)+1),cull=true,o1=0,o2=0,p1=0,p2=0;
+      for(var m0=0;m0<nn&&cull;m0++){var s0=near[m0],ex0=sx[s0]-cx,ey0=sy[s0]-cy,dd=Math.sqrt(ex0*ex0+ey0*ey0);if(dd<1.6*bs)cull=false;else{var r0=dd-0.75*bs;mg+=sm[s0]*bs/(r0*r0);}}
+      if(cull){for(var c4=0;c4<4;c4++){var X0=c4&1?xb:xa,Y0=c4&2?yb:ya,A1=cf[c4*2],A2=cf[c4*2+1];
+          for(var m1=0;m1<nn;m1++){var s1=near[m1],pa=X0-sx[s1],pb=Y0-sy[s1],ia=sm[s1]/(pa*pa+pb*pb);A1+=pa*ia;A2+=pb*ia;}
+          var U1=g1*X0-A1-c1,U2=g2*Y0-A2-c2;if(U1>Lw+mg)o1++;else if(U1<-Lw-mg)p1++;if(U2>Lw+mg)o2++;else if(U2<-Lw-mg)p2++;}
+        if(o1===4||p1===4||o2===4||p2===4)continue;}
+      shot+=(i1-i0)*(j1-j0);
       var iw=1/(xb-xa),ih=1/(yb-ya);
       for(var j=j0;j<j1;j++){var x2=x2m+(j+0.5)*dy,v=(x2-ya)*ih;
         var lx0=cf[0]+(cf[4]-cf[0])*v,ly0=cf[1]+(cf[5]-cf[1])*v,lx1=cf[2]+(cf[6]-cf[2])*v,ly1=cf[3]+(cf[7]-cf[3])*v;
         for(var i=i0;i<i1;i++){var x1=x1m+(i+0.5)*dx,u=(x1-xa)*iw,a1=lx0+(lx1-lx0)*u,a2=ly0+(ly1-ly0)*u;
-          for(var m=0;m<nn;m++){var s=near[m],p=x1-sx[s],qq=x2-sy[s],ir2=1/(p*p+qq*qq);a1+=p*ir2;a2+=qq*ir2;}
+          for(var m=0;m<nn;m++){var s=near[m],p=x1-sx[s],qq=x2-sy[s],ir2=sm[s]/(p*p+qq*qq);a1+=p*ir2;a2+=qq*ir2;}
           var X=(g1*x1-a1-c1+Lw)*sc,Y=(g2*x2-a2-c2+Lw)*sc;
           if(X>=0&&X<N&&Y>=0&&Y<N)c[(Y|0)*N+(X|0)]+=1;}}}}
   var f=dx*dy/((2*Lw/N)*(2*Lw/N));for(var e=0;e<c.length;e++)c[e]*=f;
-  return {c:c,rays:nx*ny};}
+  return {c:c,rays:shot};}
 
 let pool=null;
 function getPool(){
@@ -377,12 +461,19 @@ async function runMain(tasks,onProg){const out=[];for(let i=0;i<tasks.length;i++
 function rayTask(lens,stars,t,c1,c2,Lw,N,rpp,id){
   const muAvg=1/Math.abs((1-lens.kt)**2-lens.g**2),pxw=2*Lw/N,sx=new Float64Array(stars.n),sy=new Float64Array(stars.n);
   for(let i=0;i<stars.n;i++){sx[i]=stars.x[i]+stars.vx[i]*t;sy[i]=stars.y[i]+stars.vy[i]*t;}
-  return {sx,sy,k:lens.k,kc:lens.kc,kt:lens.kt,g:lens.g,c1,c2,N,Lw,dens:Math.sqrt(rpp/(muAvg*pxw*pxw)),id};
+  return {sx,sy,sm:stars.m,k:lens.k,kc:lens.kc,kt:lens.kt,g:lens.g,c1,c2,N,Lw,dens:Math.sqrt(rpp/(muAvg*pxw*pxw)),id};
 }
 
-/* ---------- disk model ---------- */
+/* ======================= DISK MODEL (shared with the Lab) =======================
+   Thin disk: blackbody rings with T ∝ r^−β and the inner-edge factor (1 − √(r_in/r))^¼; radii in r_g.
+   r½ is quoted at rest-frame 2500 Å; at wavelength λ the scale radius grows as (λ/2500 Å)^(1/β).
+   GR (optional): Kerr circular orbits, Doppler boost + gravitational redshift, I_obs = g³ I(ν/g), light travels in straight lines.
+   Spin only sets the metric: r_in ≥ r_isco(a*), so r_in gives a lower limit a* ≥ minSpin(r_in). */
 function iscoOf(a){const Z1=1+Math.cbrt(1-a*a)*(Math.cbrt(1+a)+Math.cbrt(1-a)),Z2=Math.sqrt(3*a*a+Z1*Z1);return 3+Z2-Math.sign(a)*Math.sqrt((3-Z1)*(3+Z1+2*Z2));}
 function spinFromIsco(r){let lo=-0.998,hi=0.998;for(let i=0;i<50;i++){const m=(lo+hi)/2;if(iscoOf(m)>r)lo=m;else hi=m;}return (lo+hi)/2;}
+const RISCO_RETRO=iscoOf(-0.998);
+function minSpin(rin){return rin>=RISCO_RETRO?-0.998:spinFromIsco(rin);}       // r_in ≥ r_isco(a*) ⇒ a* ≥ this
+function modelSpin(rin){return Math.max(0,minSpin(rin));}                       // player's model: least spin that allows r_in (Schwarzschild if r_in ≥ 6)
 function xiOf(r,rin,rs,be){return Math.pow(r/rs,be)*Math.pow(1-Math.sqrt(rin/r),-0.25);} // T ∝ r^-β (β = 3/4 for a standard thin disk)
 function radii(rin,rs,be){
   const n=500,lt=Math.log((rin+Math.pow(60,1/be)*rs)/rin),cum=new Float64Array(n+1);let tot=0;
@@ -393,13 +484,13 @@ function radii(rin,rs,be){
 const solveCache=new Map();
 function solveDisk(rin,rh,be){
   be=be||0.75;const key=rin.toFixed(3)+"|"+rh.toFixed(3)+"|"+be.toFixed(3);if(solveCache.has(key))return solveCache.get(key);
-  let lo=Math.log(1e-4),hi=Math.log(400);
+  let lo=Math.log(1e-4),hi=Math.log(2e4);
   for(let i=0;i<46;i++){const m=(lo+hi)/2;if(radii(rin,Math.exp(m),be).rh<rh)lo=m;else hi=m;}
   const rs=Math.exp((lo+hi)/2),rr=radii(rin,rs,be),out={rs,r99:rr.r99,rhAct:rr.rh};solveCache.set(key,out);return out;
 }
 function prep(p,L){const s=solveDisk(p.rin,p.rh,p.beta),inc=p.inc*D2R,pa=p.pa*D2R,be=p.beta||0.75;
   let rs=s.rs,r99=s.r99;if(L&&L!==1){rs=s.rs*Math.pow(L,1/be);r99=radii(p.rin,rs,be).r99;}
-  return {rs,r99,be:p.beta||0.75,rin:p.rin,ci:Math.cos(inc),si:Math.sin(inc),cp:Math.cos(pa),sp:Math.sin(pa),gr:p.gr,a:p.gr?spinFromIsco(p.rin):0};}
+  return {rs,r99,be:p.beta||0.75,rin:p.rin,ci:Math.cos(inc),si:Math.sin(inc),cp:Math.cos(pa),sp:Math.sin(pa),gr:p.gr,a:p.gr?(p.a!=null?p.a:modelSpin(p.rin)):0};}
 function inten(xs,ys,q){
   const x=xs*q.cp+ys*q.sp,y=(-xs*q.sp+ys*q.cp)/q.ci,r=Math.sqrt(x*x+y*y);
   if(r<=q.rin||r>q.r99)return 0;
@@ -413,9 +504,14 @@ function buildKernel(p,L){
   for(let oy=-R;oy<=R;oy++)for(let ox=-R;ox<=R;ox++){let s=0;
     for(let a=0;a<S;a++)for(let b=0;b<S;b++)s+=inten((ox+(a+0.5)/S-0.5)/PXPERRG,(oy+(b+0.5)/S-0.5)/PXPERRG,q);
     tmp[(oy+R)*W+ox+R]=s;if(s>mx)mx=s;}
-  const off=[],w=[];let sum=0;
-  for(let oy=-R;oy<=R;oy++)for(let ox=-R;ox<=R;ox++){const v=tmp[(oy+R)*W+ox+R];if(v>mx*1e-4){off.push(oy*NW+ox);w.push(v);sum+=v;}}
-  return {off:Int32Array.from(off),w:Float64Array.from(w),sum};
+  const off=[],w=[],off3=[],w3=[];let sum=0;
+  // large disks: full-resolution taps in the bright core; outside it one tap per 3×3 cell (read from a 3×3-averaged map)
+  const st=R>45?3:1,h=(st-1)/2,core=st===3?16:R+1;
+  for(let cy=-R+h;cy<=R-h;cy+=st)for(let cx=-R+h;cx<=R-h;cx+=st){
+    if(Math.abs(cx)<=core&&Math.abs(cy)<=core){for(let dy=-h;dy<=h;dy++)for(let dx=-h;dx<=h;dx++){const v=tmp[(cy+dy+R)*W+cx+dx+R];if(v>mx*1e-4){off.push((cy+dy)*NW+cx+dx);w.push(v);sum+=v;}}continue;}
+    let v=0;for(let dy=-h;dy<=h;dy++)for(let dx=-h;dx<=h;dx++)v+=tmp[(cy+dy+R)*W+cx+dx+R];
+    if(v>mx*1e-4){off3.push(cy*NW+cx);w3.push(v);sum+=v;}}
+  return {off:Int32Array.from(off),w:Float64Array.from(w),off3:Int32Array.from(off3),w3:Float64Array.from(w3),sum,st};
 }
 
 /* ---------- game state ---------- */
@@ -427,7 +523,7 @@ const opts={isco:false,geom:false,gr:false,beta:false,nb:"1"};
 const BANDS={u:{l:0.367,v:"--bu",nf:1.5},g:{l:0.482,v:"--bg_",nf:1.0},r:{l:0.622,v:"--br",nf:1.0},i:{l:0.755,v:"--bi",nf:1.1},z:{l:0.869,v:"--bz",nf:1.3},y:{l:0.971,v:"--by",nf:1.6}}; // Rubin LSST ugrizy
 const BANDSETS={"1":["r"],"3":["g","r","i"],"6":["u","g","r","i","z","y"]};
 function bandList(){return BANDSETS[opts.nb]||["r"];}
-const lr=b=>BANDS[b]?BANDS[b].l/BANDS.r.l:1;
+const lr=b=>BANDS[b]?BANDS[b].l*1e4/(1+(PHYS?PHYS.zs:2))/LREF:1;   // λ_rest / 2500 Å
 let viewSet=new Set(["r"]),hideB=new Set();   // bands shown on the map (any combination)
 function freeList(){return ["rh",...(opts.geom?["inc","pa"]:[]),...(opts.isco?["rin"]:[]),...(opts.gr?["gr"]:[]),...(opts.beta?["beta"]:[])];}
 function fixedVals(){return {};} // parameters not being fit are still drawn per event and given to the player
@@ -437,47 +533,62 @@ function srcPos(t){return {x:ev.s0x+(ev.s1x-ev.s0x)*t/100,y:ev.s0y+(ev.s1y-ev.s0
 function frameAt(t){const fp=t/100*(NF-1),f0=Math.min(NF-2,Math.floor(fp));return {f0,fr:fp-f0};}
 function offsetIn(f,t){const s=srcPos(t),c=srcPos(f*100/(NF-1));return {x:(s.x-c.x)/PX,y:(s.y-c.y)/PX};}
 
-async function buildEvent(seed,lens,onProg){
-  const rng=mulberry32(seed^0x51ed270b),a=Math.abs(1-lens.kt-lens.g),b=Math.abs(1-lens.kt+lens.g),ext=lens.len/2+0.06+LW+0.15;
-  const R=Math.hypot(ext/a+2.5,ext/b+2.5)+3,n=Math.round(lens.k*R*R);
-  const NP=192,LP=0.8,opx=2*LP/NP;let pick=null;
+async function buildEvent(seed,lens,onProg,last=true){
+  const rng=mulberry32(seed^0x51ed270b),a=Math.abs(1-lens.kt-lens.g),b=Math.abs(1-lens.kt+lens.g);
+  const rho=PHYS.rhoR,Cr=Math.max(0.25,3*rho),ext=lens.len/2+Cr+LW+0.15+PHYS.rsig*lens.len;
+  const R=Math.hypot((ext+1.5)/a+2.5,(ext+1.5)/b+2.5)+4,n=Math.round(lens.k*R*R);   // room for the images' shift on near-critical lenses
+  const NP=256,LP=lens.len/2+Cr+3*rho,opx=2*LP/NP,rb=Math.max(1,Math.round(rho/opx));let pick=null;
   // draw star fields until the 100-day path crosses real caustics (sparse fields can leave a quiet patch)
-  for(let att=0;att<8;att++){
-    const st={n,x:new Float64Array(n),y:new Float64Array(n),vx:new Float64Array(n),vy:new Float64Array(n)};
+  for(let att=0;att<6;att++){
+    const st={n,x:new Float64Array(n),y:new Float64Array(n),vx:new Float64Array(n),vy:new Float64Array(n),m:new Float64Array(n)};
     let mvx=0,mvy=0;
-    for(let i=0;i<n;i++){const r=R*Math.sqrt(rng()),t=2*Math.PI*rng();st.x[i]=r*Math.cos(t);st.y[i]=r*Math.sin(t);st.vx[i]=lens.sig*gauss(rng);st.vy[i]=lens.sig*gauss(rng);mvx+=st.vx[i];mvy+=st.vy[i];}
+    for(let i=0;i<n;i++){const r=R*Math.sqrt(rng()),t=2*Math.PI*rng();st.x[i]=r*Math.cos(t);st.y[i]=r*Math.sin(t);st.vx[i]=lens.sig*gauss(rng);st.vy[i]=lens.sig*gauss(rng);st.m[i]=chabrierSample(rng)/MMEAN;mvx+=st.vx[i];mvy+=st.vy[i];}
     for(let i=0;i<n;i++){st.vx[i]-=mvx/n;st.vy[i]-=mvy/n;}
     const [orr]=await runTasks([rayTask(lens,st,50,0,0,LP,NP,10,0)],()=>{});const ov=orr.c;
+    // smooth the overview to the disk size, then score candidate paths by how much the brightness swings along them
+    const I=new Float64Array((NP+1)*(NP+1));for(let y=0;y<NP;y++){let row=0;for(let x=0;x<NP;x++){row+=ov[y*NP+x];I[(y+1)*(NP+1)+x+1]=I[y*(NP+1)+x+1]+row;}}
+    const sm=(x,y)=>{const x0=Math.max(0,x-rb),x1=Math.min(NP,x+rb+1),y0=Math.max(0,y-rb),y1=Math.min(NP,y+rb+1);
+      return (I[y1*(NP+1)+x1]-I[y0*(NP+1)+x1]-I[y1*(NP+1)+x0]+I[y0*(NP+1)+x0])/((x1-x0)*(y1-y0));};
     let best=null,bs=-1;
-    for(let c=0;c<60;c++){
-      const th=rng()*2*Math.PI,cx=(rng()-0.5)*0.12,cy=(rng()-0.5)*0.12,h=lens.len/2;
+    for(let c=0;c<150;c++){
+      const th=rng()*2*Math.PI,cx=(rng()*2-1)*Cr,cy=(rng()*2-1)*Cr,h=lens.len/2;
       const tr={s0x:cx-h*Math.cos(th),s0y:cy-h*Math.sin(th),s1x:cx+h*Math.cos(th),s1y:cy+h*Math.sin(th)};
       const m=[];for(let k=0;k<120;k++){const f=k/119,x=tr.s0x+(tr.s1x-tr.s0x)*f,y=tr.s0y+(tr.s1y-tr.s0y)*f;
-        m.push(ov[Math.floor((y+LP)/opx)*NP+Math.floor((x+LP)/opx)]);}
-      const lm=m.map((_,k)=>{let s=0,q=0;for(let j=-5;j<=5;j++)if(m[k+j]!=null){s+=m[k+j];q++;}return Math.log(s/q+1e-3);});
-      const so=[...lm].sort((p,q)=>p-q),sd=so[so.length-3]-so[Math.floor(so.length/2)]+0.5*(so[so.length-3]-so[2]);
-      if(sd>bs){bs=sd;best=tr;}
+        m.push(sm(Math.min(NP-1,Math.floor((x+LP)/opx)),Math.min(NP-1,Math.floor((y+LP)/opx))));}
+      const so=[...m].sort((p,q)=>p-q),amp=2.5*Math.log10((so[116]+1e-3)/(so[3]+1e-3));
+      if(amp>bs){bs=amp;best=tr;}
     }
     if(!pick||bs>pick.bs)pick={bs,best,st,ov};
-    if(bs>1.1)break;
+    if(bs>0.6)break;
   }
+  if(pick.bs<0.3&&!last)return false;   // nothing happens along any path: let the caller draw a new system
   const {best,st,ov}=pick;
-  ev={...best,lens,ns:n,ov,NP,LP};
+  ev={...best,lens,ns:n,ov,NP,LP,st,seed0:seed,bs:pick.bs};resetZoom(false);
   const tasks=[];for(let f=0;f<NF;f++){const t=f*100/(NF-1),s=srcPos(t);tasks.push(rayTask(lens,st,t,s.x,s.y,LW,NW,lens.rpp,f));}
-  const cs=await runTasks(tasks,onProg);ev.frames=cs.map(r=>r.c);ev.rays=cs.reduce((a,r)=>a+r.rays,0)/cs.length;
+  const cs=await runTasks(tasks,onProg);ev.frames=cs.map(r=>r.c);ev.frames3=null;ev.rays=cs.reduce((a,r)=>a+r.rays,0)/cs.length;
   // per-sample lookup for light curves
-  const C=(NW/2)*NW+NW/2;ev.b0=new Int32Array(NS);ev.b1=new Int32Array(NS);ev.f0=new Int32Array(NS);ev.fr=new Float64Array(NS);
-  for(let k=0;k<NS;k++){const t=k*100/(NS-1),{f0,fr}=frameAt(t),o0=offsetIn(f0,t),o1=offsetIn(f0+1,t);
-    ev.f0[k]=f0;ev.fr[k]=fr;ev.b0[k]=C+Math.round(o0.y)*NW+Math.round(o0.x);ev.b1[k]=C+Math.round(o1.y)*NW+Math.round(o1.x);}
+  // sub-pixel source position in each of the two frames: base pixel + bilinear weights
+  const C=(NW/2)*NW+NW/2;ev.f0=new Int32Array(NS);ev.fr=new Float64Array(NS);ev.b0=new Int32Array(NS);ev.b1=new Int32Array(NS);ev.w0=new Float64Array(NS*2);ev.w1=new Float64Array(NS*2);
+  for(let k=0;k<NS;k++){const t=k*100/(NS-1),{f0,fr}=frameAt(t),o0=offsetIn(f0,t),o1=offsetIn(f0+1,t);ev.f0[k]=f0;ev.fr[k]=fr;
+    const x0=Math.floor(o0.x),y0=Math.floor(o0.y),x1=Math.floor(o1.x),y1=Math.floor(o1.y);
+    ev.b0[k]=C+y0*NW+x0;ev.w0[2*k]=o0.x-x0;ev.w0[2*k+1]=o0.y-y0;ev.b1[k]=C+y1*NW+x1;ev.w1[2*k]=o1.x-x1;ev.w1[2*k+1]=o1.y-y1;}
 }
 function curveOf(p,b){
-  const K=buildKernel(p,b?lr(b):1),out=new Float64Array(NS),off=K.off,w=K.w,m=off.length;
-  for(let k=0;k<NS;k++){const A=ev.frames[ev.f0[k]],B=ev.frames[ev.f0[k]+1],b0=ev.b0[k],b1=ev.b1[k],fr=ev.fr[k];let s0=0,s1=0;
-    for(let j=0;j<m;j++)s0+=w[j]*A[b0+off[j]];
-    if(fr>1e-6)for(let j=0;j<m;j++)s1+=w[j]*B[b1+off[j]];
+  const K=buildKernel(p,b?lr(b):1),out=new Float64Array(NS),off=K.off,w=K.w,m=off.length,off3=K.off3,w3=K.w3,m3=off3.length,memo=new Map();
+  const F3=m3?frames3():null;   // coarse taps read a 3×3-averaged map, so sharp folds are not aliased
+  // disk-weighted magnification with the disk centred on pixel `base` of frame f (memoised: neighbouring samples share pixels)
+  const at=(f,base)=>{const key=f*NW*NW+base;let v=memo.get(key);if(v===undefined){const A=ev.frames[f];v=0;for(let j=0;j<m;j++)v+=w[j]*A[base+off[j]];if(m3){const A3=F3[f];for(let j=0;j<m3;j++)v+=w3[j]*A3[base+off3[j]];}memo.set(key,v);}return v;};
+  const bil=(f,base,fx,fy)=>(1-fy)*((1-fx)*at(f,base)+(fx>1e-6?fx*at(f,base+1):0))+(fy>1e-6?fy*((1-fx)*at(f,base+NW)+(fx>1e-6?fx*at(f,base+NW+1):0)):0);
+  for(let k=0;k<NS;k++){const f0=ev.f0[k],fr=ev.fr[k];
+    const s0=bil(f0,ev.b0[k],ev.w0[2*k],ev.w0[2*k+1]),s1=fr>1e-6?bil(f0+1,ev.b1[k],ev.w1[2*k],ev.w1[2*k+1]):0;
     out[k]=-2.5*Math.log10(((1-fr)*s0+fr*s1)/K.sum);}
   return out;
 }
+function frames3(){if(ev.frames3)return ev.frames3;
+  ev.frames3=ev.frames.map(A=>{const n=NW,B=new Float32Array(n*n),T=new Float32Array(n*n);
+    for(let y=0;y<n;y++)for(let x=1;x<n-1;x++){const i=y*n+x;T[i]=(A[i-1]+A[i]+A[i+1])/3;}
+    for(let y=1;y<n-1;y++)for(let x=0;x<n;x++){const i=y*n+x;B[i]=(T[i-n]+T[i]+T[i+n])/3;}return B;});
+  return ev.frames3;}
 function interp(c,t){const x=t/100*(c.length-1),i=Math.min(c.length-2,Math.floor(x)),f=x-i;return c[i]*(1-f)+c[i+1]*f;}
 function curvesOf(p){const o={};for(const b of bandList())o[b]=curveOf(p,b);return o;}
 // combined fit over all bands: each band gets its own magnitude zero point
@@ -487,8 +598,11 @@ function fit(cs){let chi=0,N=0;const offs={};
   return {off:offs.r,offs,chi2nu:chi/Math.max(1,N-freeList().length-data.bands.length)};}
 function randTruth(rng){
   const lu=(a,b)=>Math.exp(Math.log(a)+rng()*(Math.log(b)-Math.log(a)));
-  const rin=Math.round((1.3+rng()*7.2)*20)/20,t={rh:Math.max(lu(8,35),2.5*rin),inc:Math.round(15+rng()*60),pa:Math.round(rng()*179),rin,gr:rng()<0.5?1:-1};
-  t.beta=Math.round((0.4+rng()*0.9)*100)/100;t.zq=Math.round((0.5+rng()*2.5)*100)/100;
+  const rin=Math.round((1.3+rng()*10.4)*20)/20,mx=Math.max(1,Math.min(4,0.3/PHYS.rhoR,Math.max(1.3,1.5*PHYS.Nd))),t={rh:Math.max(PHYS.rhPred*lu(Math.min(0.7,mx/1.5),mx),2.5*rin),inc:Math.round(15+rng()*60),pa:Math.round(rng()*359),rin,gr:1};
+  if(opts.gr&&rng()<0.3)t.gr=0;                                                   // when GR is being fit, some disks are Newtonian
+  {const lo=minSpin(rin);t.a=Math.round((lo+rng()*(0.998-lo))*1000)/1000;}       // hidden spin: any value whose ISCO lies inside r_in
+  if(!t.gr)t.pa%=180;
+  t.beta=Math.round((0.4+rng()*0.9)*100)/100;t.zq=PHYS.zs;
   const fx=fixedVals(),fr=freeList();for(const k in fx)if(!fr.includes(k))t[k]=fx[k];t.rh=Math.max(t.rh,2.5*t.rin);return t;
 }
 /* each event draws its own monitoring campaign: cadence and photometric errors */
@@ -503,19 +617,23 @@ function presetFor(l,rng){const o={geom:false,isco:false,gr:false,beta:false,nb:
   for(const k of g.slice(0,NEXTRA[l]))o[k]=true;
   o.nb=l==="4"?"6":o.beta?"3":"1";return o;}
 const LEVELS={
-  "1":{name:"Easy",camp:1,lo:0.01,hi:0.015,dt:1,tag:"Crayons allowed. Just find the size.",fit:"Fit r½ · nightly data, 1–1.5% errors"},
-  "2":{name:"Medium",camp:2,lo:0.015,hi:0.022,dt:2,tag:"One mystery parameter joins the size. Check the Parameters row.",fit:"Fit r½ + 1 random extra (i θ, ISCO, GR or slope) · weather losses, 1.5–2.2% errors"},
-  "3":{name:"Hard",camp:3,lo:0.022,hi:0.03,dt:3,tag:"Two mystery parameters, sparse and noisy. Reviewer 2 is watching.",fit:"Fit r½ + 2 random extras · sparse with a gap, 2.2–3% errors"},
-  "4":{name:"Extreme",camp:3,lo:0.026,hi:0.035,dt:3,tag:"Everything, plus the temperature slope. Abandon all priors.",fit:"Fit r½, i, θ, ISCO, GR, slope · 6 bands (ugrizy) · sparse with a gap, 2.6–3.5% errors"},
+  "1":{name:"Easy",camp:1,lo:0.01,hi:0.015,dt:1,tag:"Crayons allowed. Just find the size.",fit:"Fit r½ · nightly, 1–1.5% errors"},
+  "2":{name:"Medium",camp:2,lo:0.015,hi:0.022,dt:2,tag:"One mystery parameter joins the size. Check the Parameters row.",fit:"Fit r½ + 1 random extra (i θ, r_in, GR or slope) · every 2 nights with weather losses, 1.5–2.2% errors"},
+  "3":{name:"Hard",camp:3,lo:0.022,hi:0.03,dt:3,tag:"Two mystery parameters, sparse and noisy. Reviewer 2 is watching.",fit:"Fit r½ + 2 random extras · every 4 nights with an extra gap, 2.2–3% errors"},
+  "4":{name:"Extreme",camp:4,lo:0.026,hi:0.035,dt:3,tag:"All the knobs. No mercy. Good luck.",fit:"Fit r½, i, θ, r_in, GR, slope · 6 bands (ugrizy) · every 5 nights with an extra gap, 2.6–3.5% errors"},
   any:{name:"Custom",tag:"Your rules. Pick the parameters below.",fit:"Your choice of parameters · random data"}};
 const LVNAMES=["","Easy","Medium","Hard","Extreme"];
 function makeData(rng){
-  const P=LEVELS[level],L=P.camp||0,u=L===1?0:L===2?0.5:L===3?0.9:rng();
+  const P=LEVELS[level],L=P.camp||(1+Math.floor(rng()*3));
   const lo=P.lo??0.01,hi=P.hi??0.03;
   const sig=Math.round((lo+rng()*(hi-lo))*1000)/1000,t=[];let cad;
-  if(u<0.35){cad="nightly";for(let d=0;d<100;d++)t.push(d+0.5+(rng()-0.5)*0.6);}
-  else if(u<0.7){cad="weather losses";for(let d=0;d<100;d++)if(rng()<0.7)t.push(d+0.5+(rng()-0.5)*0.6);}
-  else{cad="every other night, season gap";const g=25+rng()*40;for(let d=0;d<100;d+=2)if(rng()<0.65&&(d<g||d>g+20))t.push(d+1+(rng()-0.5));}
+  /* cadence is set in real days by the difficulty, whatever the window: a longer window simply holds more visits.
+     Windows longer than ~half a year also lose ~38% of each year while the quasar is behind the Sun. */
+  const T=PHYS.T,CAD={1:[1,1,0],2:[2,0.7,0],3:[4,0.65,1],4:[5,0.6,1]}[L],[step,keep,gapOn]=CAD;
+  const seasonal=T>180,ph=rng()*365.25,vis=d=>!seasonal||((d+ph)%365.25)<0.62*365.25;
+  const g0=(0.25+rng()*0.4)*T,gl=Math.max(10,0.15*T),gap=d=>gapOn&&d>g0&&d<g0+gl;
+  for(let d=0;d<T;d+=step)if(vis(d)&&!gap(d)&&rng()<keep){const x=d+step/2+(rng()-0.5)*0.6*step;if(x>=0&&x<=T)t.push(x/T*100);}
+  cad=(step===1?"nightly":`every ${step} nights`)+(keep<1?", weather losses":"")+(gapOn?", an extra gap":"")+(seasonal?", seasonal gaps":"");
   const bl=bandList();
   if(bl.length===1){const m=t.map(x=>interp(tCurves.r,x)+sig*gauss(rng));return {t,m,sig,cad,bands:[{b:"r",t,m,sig}]};}
   // Rubin-like: each night observes a few of the bands (2 of 3, or 3 of 6)
@@ -551,23 +669,31 @@ function paintFrames(){
 const fmtMu=v=>v<10?v.toFixed(1):v.toFixed(0);
 
 async function newGame(seedIn){
-  if(busy)return;busy=true;stop();clearTimed();
+  if(busy)return;busy=true;syncMainBtn();stop();clearTimed();
   $("revealBtn").disabled=true;$("loading").hidden=false;$("loadBar").style.width="0%";
-  const seed=(typeof seedIn==="number"?seedIn:null)??(playMode==="daily"?dailySeed():(Math.random()*2**31)|0),rng=mulberry32(seed),lens=randLens(rng);curSeed=seed;
+  const seed=(typeof seedIn==="number"?seedIn:null)??(playMode==="daily"?dailySeed():(Math.random()*2**31)|0),rng=mulberry32(seed);let lens=randLens(rng);curSeed=seed;
+  setPhys(drawPhys(rng),lens);
   $("loadTxt").textContent=`Ray-shooting ${NF} frames of the moving star field…`;
-  try{await buildEvent(seed,lens,f=>{$("loadBar").style.width=(f*100).toFixed(0)+"%";if(Math.round(f*NF)%8===1)$("loadTxt").textContent=pick(LOADQUIPS)+` (${Math.round(f*NF)}/${NF})`;});}
+  try{for(let a=0;a<3;a++){if(await buildEvent(seed+a*7919,lens,f=>{$("loadBar").style.width=(f*100).toFixed(0)+"%";if(Math.round(f*NF)%8===1)$("loadTxt").textContent=pick(LOADQUIPS)+` (${Math.round(f*NF)}/${NF})`;},a===2)!==false)break;lens=randLens(rng);setPhys(drawPhys(rng),lens);}}
   catch(e){$("loadTxt").textContent="Ray shooting failed. Press New event to try again.";busy=false;$("revealBtn").disabled=false;$("revealBtn").textContent="New event";return;}
   paintFrames();
-  $("mapMeta").textContent=`κ ${lens.kt.toFixed(2)} · κ*/κ ${lens.fs.toFixed(2)} · γ ${lens.g.toFixed(2)} · ${ev.ns} stars`;
-  $("lensTxt").title=$("lensTxt").textContent=`${lens.k<0.15?"sparse caustics":lens.k<0.3?"moderate caustic network":"dense caustic network"}${1-lens.kt-lens.g<0?" · saddle-point image":""} · source ${lens.len.toFixed(2)} R_E / 100 d · stars ${(lens.sig*400).toFixed(1)} r_g/d`;
+  const P=PHYS,sep=" <i>·</i> ";
+  $("cardQ").innerHTML=`<b>Quasar</b>M_BH ${sci(P.M)} M☉${sep}z_s ${P.zs.toFixed(2)}${sep}1 R_E = ${fmtLd(P.RE/LTDAY)} lt-d = ${Math.round(1/P.eps)} r_g`;
+  $("cardQ").title=`Black-hole mass ${sci(P.M)} M☉ at redshift ${P.zs.toFixed(2)}. Its gravitational radius r_g = GM/c² = ${sci(RG1*P.M)} cm; one Einstein radius is ${Math.round(1/P.eps)} r_g.`;
+  $("cardL").innerHTML=`<b>Lens</b>z_l ${P.zl.toFixed(2)}${sep}κ ${lens.kt.toFixed(2)}${sep}κ*/κ ${lens.fs.toFixed(2)}${sep}γ ${lens.g.toFixed(2)}${sep}${ev.ns} stars${sep}v ${Math.round(P.v)} km/s`;
+  $("cardL").title=`Lens galaxy at z = ${P.zl.toFixed(2)}: convergence κ ${lens.kt.toFixed(2)}, ${Math.round(lens.fs*100)}% of it in stars (${ev.ns} stars, Chabrier 0.1–1 M☉, mean ${MMEAN.toFixed(2)} M☉), shear γ ${lens.g.toFixed(2)}${1-lens.kt-lens.g<0?", saddle-point image":""}. Effective transverse speed ${Math.round(P.v)} km/s; one Einstein radius = ${sci(P.RE)} cm = ${fmtLd(P.RE/LTDAY)} light-days, crossed in ${(P.RE/(P.v*1e5)/3.156e7).toFixed(1)} yr. In this window the quasar moves ${P.L<0.1?P.L.toFixed(3):P.L.toFixed(2)} R_E.`;
+  for(let d=0;d<=100;d+=20)$("shot"+d).querySelector("span").textContent=fmtShort(d);
   $("loading").hidden=true;busy=false;
   newDisk(playMode==="daily"?diskRng():rng);
+  // if even the best disk leaves the data with no signal, start over with a new system (up to twice)
+  if(evRate.impossible&&(newGame.retry=(newGame.retry||0)+1)<=2){busy=false;return newGame(seed+104729);}
+  newGame.retry=0;
   if(playMode==="timed")startRound();
   updateModebar();
 }
 /* measured difficulty: nudge each fitted parameter and see how much χ² changes (zero point refit) */
-const NUDGE={rh:t=>({...t,rh:t.rh*1.15}),inc:t=>({...t,inc:t.inc>45?t.inc-10:t.inc+10}),pa:t=>({...t,pa:(t.pa+12)%180}),
-  rin:t=>({...t,rin:t.rin>5?t.rin-1.2:t.rin+1.2}),gr:t=>({...t,gr:-t.gr}),beta:t=>({...t,beta:t.beta>0.85?t.beta-0.15:t.beta+0.15})};
+const NUDGE={rh:t=>({...t,rh:t.rh*1.15}),inc:t=>({...t,inc:t.inc>45?t.inc-10:t.inc+10}),pa:t=>({...t,pa:(t.pa+12)%(t.gr?360:180)}),side:t=>({...t,pa:(t.pa+180)%360}),
+  rin:t=>({...t,rin:t.rin>5?t.rin-1.2:t.rin+1.2}),gr:t=>({...t,gr:t.gr?0:1}),beta:t=>({...t,beta:t.beta>0.85?t.beta-0.15:t.beta+0.15})};
 let evRate=null;
 function rateEvent(){
   const per={};let tot=0,n=0;
@@ -591,16 +717,16 @@ function newDisk(rng){
   const maxTries=bandList().length>1?8:14;
   for(let tries=0;tries<maxTries;tries++){truth=randTruth(rng);tCurves=curvesOf(truth);tCurve=tCurves.r;data=makeData(rng);evRate=rateEvent();
     if(evRate.impossible&&tries<maxTries-1)continue;
-    const miss=level==="any"?0:Math.abs(evRate.dLev-LEVELS[level].dt);
+    const dead=Object.values(evRate.per).filter(x=>x<2).length,miss=(level==="any"?0:Math.abs(evRate.dLev-LEVELS[level].dt))+3*dead;
     if(!best||miss<best.miss)best={miss,truth,tCurve,tCurves,data,evRate};
     if(miss===0)break;}
   ({truth,tCurve,tCurves,data,evRate}=best);if(level!=="any")evRate.stars=+level;
   tFit=fit(tCurves);spikes=data.bands.length>1?[]:findSpikes();syncBandUI();
-  $("evRate").innerHTML=`<span class="badge e${evRate.stars}" title="Overall rating: how informative the data are, plus the extra parameters you are fitting"><span class="stars">${"★".repeat(evRate.stars)}<i>${"★".repeat(4-evRate.stars)}</i></span>${LVNAMES[level==="any"?evRate.stars:+level]}</span><span class="pmult" title="Points earned = score × this. Grows with each extra parameter you fit and with the event's stars.">×${pointMult().toFixed(2)} pts</span>`;
-  $("campaign").textContent=`${level==="any"?["","Easy","Medium","Hard"][evRate.dLev]+" data · ":""}z ${truth.zq.toFixed(2)} · ${data.nTot||data.t.length} points · ${data.cad} · ${(data.sig*100).toFixed(1)}% errors`;
+  $("evRate").innerHTML=`<span class="badge e${evRate.stars}" title="Overall rating: how informative the data are, plus the extra parameters you are fitting"><span class="stars">${"★".repeat(evRate.stars)}<i>${"★".repeat(4-evRate.stars)}</i></span>${LVNAMES[level==="any"?evRate.stars:+level]}</span><span class="pmult" title="Points earned = score × this. Grows with each extra parameter you fit and with the event's stars.">×${pointMult().toFixed(2)} pts</span><span class="wchip" title="Observing window: a close-up of one crossing, or a multi-year survey">${windowName()}</span>`;
+  $("campaign").textContent=`${level==="any"?["","Easy","Medium","Hard"][evRate.dLev]+" data · ":""}${data.nTot||data.t.length} points · ${data.cad} · ${(data.sig*100).toFixed(1)}% errors`;
   revealed=false;hints=[];$("hintList").innerHTML="";$("hintBox").hidden=true;$("hintBtn").disabled=false;$("result").hidden=true;$("truthLeg").hidden=true;$("truthLegM").hidden=true;$("pvQ").hidden=false;$("pvTrue").getContext("2d").clearRect(0,0,128,128);
-  player={rh:25,inc:40,pa:90,rin:6,gr:0,beta:0.75};{const fr=freeList();for(const k of ["rin","inc","pa","gr","beta"])if(!fr.includes(k))player[k]=truth[k];}
-  syncControls();tNow=0;$("tday").value=0;$("dayLbl").textContent="day 0.0";
+  player={rh:+PHYS.rhPred.toPrecision(3),inc:40,pa:90,rin:6,gr:0,beta:0.75};{const fr=freeList();for(const k of ["rin","inc","pa","gr","beta"])if(!fr.includes(k))player[k]=truth[k];}
+  syncControls();tNow=0;$("tday").value=0;$("dayLbl").textContent=fmtT(0);
   syncMainBtn();showBest();updateModel();
 }
 
@@ -660,7 +786,7 @@ function drawDisk(ctx,p,cx,cy,k,role,alpha){
   const sp=diskSprite(p,role,k),w=sp.size*k;ctx.save();ctx.globalAlpha=alpha;ctx.imageSmoothingEnabled=true;
   ctx.drawImage(sp.cv,cx-w/2,cy-w/2,w,w);ctx.restore();
 }
-function rhIn(p,b){if(!b||b==="r")return p.rh;const q=prep(p,lr(b));return radii(p.rin,q.rs,q.be).rh;}
+function rhIn(p,b){if(!b)return p.rh;const q=prep(p,lr(b));return radii(p.rin,q.rs,q.be).rh;}
 function outlineSpecs(p,role){
   if(role==="truth"||bandList().length<=1)return [{rh:rhIn(p,refBand()),col:css(role==="truth"?"--truth":"--model")}];
   return diskBands().map(b=>({rh:rhIn(p,b),col:css(BANDS[b].v)}));
@@ -679,33 +805,40 @@ function drawEllipse(ctx,p,x,y,k,col,dash,role){
   ctx.restore();
 }
 function drawMap(){
+  if(busy)return;   // scales and frames are being rebuilt
   const cv=$("map"),{w,d}=sizeCanvas(cv),ctx=cv.getContext("2d");ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle="#05060c";ctx.fillRect(0,0,w,w);
   if(!ev||!frameCanvases.length)return;
-  const k=w/VIEW,{f0,fr}=frameAt(tNow),o0=offsetIn(f0,tNow),o1=offsetIn(f0+1,tNow),pad=(NW-VIEW)/2;
+  const k=w/VIEW*zoom,{f0,fr}=frameAt(tNow),o0=offsetIn(f0,tNow),o1=offsetIn(f0+1,tNow);
   ctx.imageSmoothingEnabled=true;
-  ctx.globalAlpha=1;ctx.drawImage(frameCanvases[f0],(-pad-o0.x)*k,(-pad-o0.y)*k,NW*k,NW*k);
-  if(fr>0.001){ctx.globalAlpha=fr;ctx.drawImage(frameCanvases[f0+1],(-pad-o1.x)*k,(-pad-o1.y)*k,NW*k,NW*k);}
-  ctx.globalAlpha=1;const c=w/2;
+  if(sharpOK()){ctx.drawImage(sharp.cv,0,0,w,w);}
+  else{
+    ctx.globalAlpha=1;ctx.drawImage(frameCanvases[f0],w/2-(NW/2+o0.x+panX)*k,w/2-(NW/2+o0.y+panY)*k,NW*k,NW*k);
+    if(fr>0.001){ctx.globalAlpha=fr;ctx.drawImage(frameCanvases[f0+1],w/2-(NW/2+o1.x+panX)*k,w/2-(NW/2+o1.y+panY)*k,NW*k,NW*k);}
+    ctx.globalAlpha=1;queueSharp();}
+  const c=w/2-panX*k,cy=w/2-panY*k;
   const img=diskView!=="outline",ln=diskView!=="image";
-  if(revealed&&img)drawDisk(ctx,truth,c,c,k,"truth",0.9);
-  if(img)drawDisk(ctx,player,c,c,k,"model",revealed?0.75:0.95);
-  if(revealed&&ln)drawEllipse(ctx,truth,c,c,k,css("--truth"),[5,3]);
-  if(ln)drawEllipse(ctx,player,c,c,k,css("--model"));
+  if(revealed&&img)drawDisk(ctx,truth,c,cy,k,"truth",0.9);
+  if(img)drawDisk(ctx,player,c,cy,k,"model",revealed?0.75:0.95);
+  if(revealed&&ln)drawEllipse(ctx,truth,c,cy,k,css("--truth"),[5,3]);
+  if(ln)drawEllipse(ctx,player,c,cy,k,css("--model"));
   // flow arrow: caustics move opposite to the source velocity
   const ux=-(ev.s1x-ev.s0x)/ev.lens.len,uy=-(ev.s1y-ev.s0y)/ev.lens.len,ax=34*d,ay=34*d,L=18*d;
   ctx.strokeStyle=ctx.fillStyle="rgba(233,230,221,.9)";ctx.lineWidth=1.6*d;
   ctx.beginPath();ctx.moveTo(ax-ux*L,ay-uy*L);ctx.lineTo(ax+ux*L,ay+uy*L);ctx.stroke();
   ctx.beginPath();ctx.moveTo(ax+ux*L,ay+uy*L);ctx.lineTo(ax+ux*L-(ux*7-uy*5)*d,ay+uy*L-(uy*7+ux*5)*d);ctx.lineTo(ax+ux*L-(ux*7+uy*5)*d,ay+uy*L-(uy*7-ux*5)*d);ctx.closePath();ctx.fill();
   ctx.font=`${11*d}px "IBM Plex Mono",monospace`;ctx.textBaseline="middle";ctx.fillText("caustic flow",ax+26*d,ay);
-  const sb=0.25/PX*k;ctx.lineWidth=2*d;ctx.beginPath();ctx.moveTo(14*d,w-16*d);ctx.lineTo(14*d+sb,w-16*d);ctx.stroke();
-  ctx.textBaseline="bottom";ctx.fillText("0.25 R_E = 100 r_g",14*d,w-22*d);
-  ctx.textAlign="right";ctx.textBaseline="top";ctx.fillText("day "+tNow.toFixed(1),w-12*d,12*d);ctx.textAlign="left";
+  const bl=nice125(w*0.3/k*PX),sb=bl/PX*k;
+  ctx.lineWidth=2*d;ctx.beginPath();ctx.moveTo(14*d,w-16*d);ctx.lineTo(14*d+sb,w-16*d);ctx.stroke();
+  ctx.textBaseline="bottom";ctx.fillText(`${+bl.toPrecision(2)} R_E = ${Math.round(bl/RG)} r_g`,14*d,w-22*d);
+  if(zoom>1.01){ctx.textAlign="right";ctx.textBaseline="top";ctx.fillText(`${zoom.toFixed(1)}×${sharpOK()?" · sharp":playing?"":" · sharpening…"}`,w-12*d,28*d);ctx.textAlign="left";}
+  ctx.textAlign="right";ctx.textBaseline="top";ctx.fillText(fmtT(tNow),w-12*d,12*d);ctx.textAlign="left";
 }
 function drawLC(){
+  if(busy)return;
   const cv=$("lc"),{w,h,d}=sizeCanvas(cv),ctx=cv.getContext("2d");ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,w,h);
   if(!data)return;
   if(data.bands.length>1)return drawLCMulti(cv,ctx,w,h,d);
-  const ml=48*d,mr=12*d,mt=10*d,gap=14*d,rh=64*d,mb=26*d,ph=h-mt-mb-gap-rh;
+  const ml=54*d,mr=12*d,mt=10*d,gap=14*d,rh=64*d,mb=26*d,ph=h-mt-mb-gap-rh;
   const mean=data.m.reduce((a,b)=>a+b,0)/data.m.length;
   let lo=Infinity,hi=-Infinity;for(const m of data.m){lo=Math.min(lo,m-mean);hi=Math.max(hi,m-mean);}
   const pad=(hi-lo)*0.08+data.sig*2;lo-=pad;hi+=pad;
@@ -713,9 +846,9 @@ function drawLC(){
   const grid=css("--line"),mut=css("--muted");
   ctx.font=`${11*d}px "IBM Plex Mono",monospace`;ctx.fillStyle=mut;ctx.strokeStyle=grid;ctx.lineWidth=d;
   const step=niceStep((hi-lo)/Math.max(2.5,Math.min(5,ph/(42*d))));ctx.textAlign="right";ctx.textBaseline="middle";
-  for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step){const y=Y(v);ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(w-mr,y);ctx.stroke();ctx.fillText((v>0?"+":"")+v.toFixed(step<0.1?2:1),ml-6*d,y);}
-  ctx.textAlign="center";ctx.textBaseline="top";for(let t=0;t<=100;t+=20)ctx.fillText(t===100?"100 d":t,X(t)-(t===100?10*d:0),h-mb+8*d);
-  ctx.save();ctx.translate(12*d,mt+ph/2);ctx.rotate(-Math.PI/2);ctx.textBaseline="middle";ctx.fillText("Δm (mag)",0,0);ctx.restore();
+  for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step){const y=Y(v);ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(w-mr,y);ctx.stroke();ctx.fillText(Math.abs(v)<1e-9?"0":(v>0?"+":"")+v.toFixed(step<0.1?2:1),ml-6*d,y);}
+  ctx.textAlign="center";ctx.textBaseline="top";{const TT=timeTicks();TT.ticks.forEach((q,i)=>{const last=i===TT.ticks.length-1;ctx.fillText(last?q.lab+" "+TT.unit:q.lab,X(q.t)-(last&&q.t>95?10*d:0),h-mb+8*d);});}
+  ctx.save();ctx.translate(10*d,mt+ph/2);ctx.rotate(-Math.PI/2);ctx.textBaseline="middle";ctx.fillText("Δm (mag)",0,0);ctx.restore();
   
   const line=(c,off,col,dash)=>{ctx.save();ctx.strokeStyle=col;ctx.lineWidth=2*d;ctx.setLineDash(dash||[]);ctx.beginPath();
     for(let k=0;k<c.length;k++){const t=k/(c.length-1)*100,y=Y(c[k]+off-mean);k?ctx.lineTo(X(t),y):ctx.moveTo(X(t),y);}ctx.stroke();ctx.restore();};
@@ -746,7 +879,7 @@ function drawLCMulti(cv,ctx,w,h,d){
   if(!isFinite(lo)){lo=0;hi=1;}const pad=(hi-lo)*0.06+0.03;lo-=pad;hi+=pad;
   const Y=v=>mt+((v-lo)/(hi-lo))*ph,grid=css("--line"),mut=css("--muted");
   ctx.font=`${11*d}px "IBM Plex Mono",monospace`;ctx.fillStyle=mut;ctx.strokeStyle=grid;ctx.lineWidth=d;
-  ctx.textAlign="center";ctx.textBaseline="top";for(let t=0;t<=100;t+=20){ctx.beginPath();ctx.moveTo(X(t),mt);ctx.lineTo(X(t),mt+ph);ctx.stroke();ctx.fillText(t===100?"100 d":t,X(t)-(t===100?10*d:0),h-mb+8*d);}
+  ctx.textAlign="center";ctx.textBaseline="top";{const TT=timeTicks();TT.ticks.forEach((q,i)=>{const last=i===TT.ticks.length-1;ctx.beginPath();ctx.moveTo(X(q.t),mt);ctx.lineTo(X(q.t),mt+ph);ctx.stroke();ctx.fillText(last?q.lab+" "+TT.unit:q.lab,X(q.t)-(last&&q.t>95?10*d:0),h-mb+8*d);});}
   // scale bar: 0.2 mag (or 0.1)
   const sb=ptp>0.4?0.2:0.1,y0=mt+ph-6*d,y1=y0-(sb/(hi-lo))*ph;ctx.strokeStyle=mut;ctx.lineWidth=2*d;ctx.beginPath();ctx.moveTo(ml-10*d,y0);ctx.lineTo(ml-10*d,y1);ctx.stroke();
   ctx.save();ctx.translate(ml-22*d,(y0+y1)/2);ctx.rotate(-Math.PI/2);ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(sb+" mag",0,0);ctx.restore();
@@ -770,7 +903,7 @@ function drawLCMulti(cv,ctx,w,h,d){
 function niceStep(x){const p=10**Math.floor(Math.log10(x)),f=x/p;return (f<1.5?1:f<3.5?2:f<7.5?5:10)*p;}
 function renderDisk(cv,p,role){
   if(role==="truth"&&bandList().length>1)role="model";   // previews compare like with like: same bands, same colours
-  const ctx=cv.getContext("2d"),W=cv.width,fov=75,im=ctx.createImageData(W,W);
+  const ctx=cv.getContext("2d"),W=cv.width,fov=PREVFOV,im=ctx.createImageData(W,W);
   im.data.set(paintDisk(p,role,W,fov,[5,6,12]));ctx.putImageData(im,0,0);
   ctx.lineWidth=1;ctx.setLineDash([2,3]);
   for(const sp of outlineSpecs(p,role)){const a=sp.rh*W/(2*fov);ctx.strokeStyle=sp.col;ctx.beginPath();ctx.ellipse(W/2,W/2,a,Math.max(a*Math.cos(p.inc*D2R),.5),p.pa*D2R,0,Math.PI*2);ctx.stroke();}
@@ -784,34 +917,66 @@ function syncControls(){
   const free=freeList();
   for(const k of [...sliders,"gr"]){const el=$("c-"+k),on=free.includes(k);el.classList.toggle("locked",!on);
     if(k!=="gr")$("s-"+k).disabled=!on;else el.querySelectorAll("button").forEach(b=>b.disabled=!on);}
-  for(const k of sliders)$("s-"+k).value=player[k];
+  $("s-rh").min=Math.log10(PHYS.rhPred/4).toFixed(3);$("s-rh").max=Math.log10(PHYS.rhPred*10).toFixed(3);
+  for(const k of sliders)$("s-"+k).value=k==="rh"?Math.log10(player.rh):player[k];
   updateOutputs();
 }
 function updateOutputs(){
   const s=solveDisk(player.rin,player.rh,player.beta);
-  $("o-rh").textContent=`${s.rhAct.toFixed(1)} r_g`;$("o-rh").title=`${(s.rhAct*RG).toFixed(3)} R_E`;
-  $("lbl-rh").title=truth?`Measured in the observed r band (0.62 μm) = ${Math.round(BANDS.r.l*1e4/(1+truth.zq))} Å rest frame at z = ${truth.zq.toFixed(2)}. Other bands scale as λ^(1/β).`:"Measured in the observed r band (0.62 μm)";
+  $("o-rh").textContent=`${s.rhAct<100?s.rhAct.toFixed(1):s.rhAct.toFixed(0)} r_g`;$("o-rh").title=PHYS?`${fmtLd(ltd(s.rhAct))} light-days · ${(s.rhAct*RG).toPrecision(2)} R_E (thin-disk prediction ${PHYS.rhPred.toFixed(0)} r_g)`:"";
+  $("lbl-rh").title=PHYS?`Half-light radius at rest-frame 2500 Å. At z = ${PHYS.zs.toFixed(2)} the r band sees ${Math.round(BANDS.r.l*1e4/(1+PHYS.zs))} Å; each band's size scales as λ^(1/β).`:"Half-light radius at rest-frame 2500 Å";
   const fr=freeList();
   $("o-inc").textContent=fr.includes("inc")?player.inc.toFixed(0)+"°":`given ${player.inc}°`;
+  $("s-pa").max=player.gr?359:179;
   $("o-pa").textContent=fr.includes("pa")?player.pa.toFixed(0)+"°":`given ${player.pa}°`;
   $("o-beta").textContent=`${fr.includes("beta")?"":"given "}β ${(player.beta||0.75).toFixed(2)}`;$("o-beta").title="β = 0.75 is a standard thin disk; smaller β spreads the light outward";
-  $("o-rin").textContent=`${fr.includes("rin")?"":"given "}${player.rin.toFixed(2)} r_g`;$("o-rin").title=`spin a* = ${spinFromIsco(player.rin).toFixed(2)}`;
+  $("o-rin").textContent=`${fr.includes("rin")?"":"given "}${player.rin.toFixed(2)} r_g`;$("o-rin").title=`Where thin-disk emission stops. The ISCO must lie inside it, so spin a* ≥ ${minSpin(player.rin).toFixed(2)}`;
   $("o-gr").textContent=freeList().includes("gr")?"":"given";
   document.querySelectorAll("#c-gr .seg button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.g===player.gr)));
 }
 let pend=false;
-function updateModel(){if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;if(!ev||!data)return;
+function updateModel(){if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;if(!ev||!data||busy)return;
   pCurves=curvesOf(player);pCurve=pCurves.r;pFit=fit(pCurves);const c=pFit.chi2nu,el=$("chi");el.textContent=c.toFixed(2);
   const warm=Math.max(0,Math.min(1,1-Math.log10(Math.max(c,1))/Math.log10(40)));$("warmBar").style.width=(warm*100).toFixed(0)+"%";
   el.classList.toggle("good",c<1.3&&c>=1.08);el.classList.toggle("hot",c<1.08);updateSpikes();
   renderDisk($("pvYou"),player,"model");updateOutputs();drawLC();drawMap();drawStrip();});}
-for(const k of sliders)$("s-"+k).addEventListener("input",e=>{player[k]=+e.target.value;if(k==="rin"&&player.rh<1.5*player.rin){player.rh=1.5*player.rin;$("s-rh").value=player.rh;}updateModel();});
-document.querySelectorAll("#c-gr .seg button").forEach(b=>b.addEventListener("click",()=>{player.gr=+b.dataset.g;updateModel();}));
+for(const k of sliders)$("s-"+k).addEventListener("input",e=>{player[k]=k==="rh"?+(10**+e.target.value).toPrecision(4):+e.target.value;if(k==="rin"&&player.rh<1.5*player.rin){player.rh=1.5*player.rin;$("s-rh").value=Math.log10(player.rh);}updateModel();});
+document.querySelectorAll("#c-gr .seg button").forEach(b=>b.addEventListener("click",()=>{player.gr=+b.dataset.g;if(!player.gr)player.pa%=180;$("s-pa").max=player.gr?359:179;$("s-pa").value=player.pa;updateModel();}));
 
 /* ---------- playback ---------- */
 let last=0;
-function stop(){playing=false;$("playBtn").textContent="Play";}
-function setT(t){tNow=Math.max(0,Math.min(100,t));$("tday").value=tNow;$("dayLbl").textContent="day "+tNow.toFixed(1);drawMap();drawLC();markStrip();}
+function stop(){playing=false;$("playBtn").textContent="Play";if(typeof queueSharp==="function"&&ev)drawMap();}
+/* ---------- map zoom: scroll/pinch on the cursor, drag to pan, double-click to reset ----------
+   Zooming magnifies the precomputed frames; when paused, the visible region is re-ray-shot at full resolution. */
+let zoom=1,panX=0,panY=0,sharp=null,sharpTimer=0,sharpJob=0;
+const ZMAX=8;
+function panLimit(){return Math.max(0,NW/2-VIEW/(2*zoom)-8);}
+function clampPan(){const L=panLimit();panX=Math.max(-L,Math.min(L,panX));panY=Math.max(-L,Math.min(L,panY));}
+function resetZoom(draw=true){zoom=1;panX=panY=0;sharp=null;if(draw&&ev)drawMap();}
+function setZoom(z,sx,sy){const cv=$("map"),r=cv.getBoundingClientRect(),k0=r.width/VIEW*zoom;
+  sx=sx??r.width/2;sy=sy??r.height/2;const ux=panX+(sx-r.width/2)/k0,uy=panY+(sy-r.height/2)/k0;
+  zoom=Math.max(1,Math.min(ZMAX,z));const k1=r.width/VIEW*zoom;panX=ux-(sx-r.width/2)/k1;panY=uy-(sy-r.height/2)/k1;
+  if(zoom<=1.001){zoom=1;panX=panY=0;}clampPan();sharp=null;drawMap();}
+function sharpKey(){return [ev&&ev.seed0,tNow.toFixed(2),zoom.toFixed(3),panX.toFixed(2),panY.toFixed(2),cmap].join("|");}
+function sharpOK(){return sharp&&sharp.key===sharpKey();}
+function queueSharp(){clearTimeout(sharpTimer);if(playing||busy||!ev||!ev.st||zoom<1.3)return;sharpTimer=setTimeout(doSharp,280);}
+async function doSharp(){if(playing||busy||!ev||zoom<1.3)return;const key=sharpKey(),job=++sharpJob,s0=srcPos(tNow);
+  const N=VIEW,Lw=VIEW*PX/2/zoom,task=rayTask(ev.lens,ev.st,tNow,s0.x+panX*PX,s0.y+panY*PX,Lw,N,ev.lens.rpp,0);
+  const [res]=await runTasks([task],()=>{});if(job!==sharpJob||key!==sharpKey())return;
+  sharp={key,cv:colorize(res.c,N)};drawMap();}
+(function(){const cv=$("map");const pts=new Map();let last=null,pinch0=null;
+  cv.addEventListener("wheel",e=>{if(!ev)return;e.preventDefault();const r=cv.getBoundingClientRect();setZoom(zoom*Math.exp(-e.deltaY*0.0015),e.clientX-r.left,e.clientY-r.top);},{passive:false});
+  cv.addEventListener("pointerdown",e=>{pts.set(e.pointerId,{x:e.clientX,y:e.clientY});cv.setPointerCapture(e.pointerId);last={x:e.clientX,y:e.clientY};
+    if(pts.size===2){const [a,b]=[...pts.values()];pinch0={d:Math.hypot(a.x-b.x,a.y-b.y),z:zoom};}cv.classList.add("dragging");});
+  cv.addEventListener("pointermove",e=>{if(!pts.has(e.pointerId)||!ev)return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});const r=cv.getBoundingClientRect();
+    if(pts.size===2&&pinch0){const [a,b]=[...pts.values()];setZoom(pinch0.z*Math.hypot(a.x-b.x,a.y-b.y)/pinch0.d,(a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top);return;}
+    if(zoom>1&&last){const k=r.width/VIEW*zoom;panX-=(e.clientX-last.x)/k;panY-=(e.clientY-last.y)/k;clampPan();sharp=null;drawMap();}last={x:e.clientX,y:e.clientY};});
+  const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch0=null;if(!pts.size){last=null;cv.classList.remove("dragging");}};
+  cv.addEventListener("pointerup",up);cv.addEventListener("pointercancel",up);
+  cv.addEventListener("dblclick",()=>resetZoom());
+  $("zIn").addEventListener("click",()=>setZoom(zoom*1.6));$("zOut").addEventListener("click",()=>setZoom(zoom/1.6));$("zReset").addEventListener("click",()=>resetZoom());
+})();
+function setT(t){tNow=Math.max(0,Math.min(100,t));$("tday").value=tNow;$("dayLbl").textContent=fmtT(tNow);drawMap();drawLC();markStrip();}
 function loop(ts){if(!playing)return;const dt=last?(ts-last)/1000:0;last=ts;let t=tNow+dt*8;if(t>=100){t=100;stop();}setT(t);if(playing)requestAnimationFrame(loop);}
 $("playBtn").addEventListener("click",()=>{if(playing){stop();return;}if(!ev)return;if(tNow>=100)tNow=0;playing=true;last=0;$("playBtn").textContent="Pause";requestAnimationFrame(loop);});
 $("tday").addEventListener("input",e=>{stop();setT(+e.target.value);});
@@ -819,9 +984,10 @@ $("lc").addEventListener("pointerdown",e=>{const r=e.currentTarget.getBoundingCl
 
 /* ---------- reveal & score ---------- */
 function bestKey(){return "cc-best-"+freeList().join("")+(opts.nb!=="1"?"-b"+opts.nb:"");}
-function showBest(){let b=null;try{b=localStorage.getItem(bestKey());}catch(e){}$("best").textContent=b?`Best with ${["r½",opts.geom&&"i, θ",opts.isco&&"ISCO",opts.gr&&"GR",opts.beta&&"slope"].filter(Boolean).join(" + ")+(opts.nb!=="1"?` · ${opts.nb} bands`:"")}: ${b}`:"";}
+function showBest(){let b=null;try{b=localStorage.getItem(bestKey());}catch(e){}$("best").textContent=b?`Best with ${["r½",opts.geom&&"i, θ",opts.isco&&"r_in",opts.gr&&"GR",opts.beta&&"slope"].filter(Boolean).join(" + ")+(opts.nb!=="1"?` · ${opts.nb} bands`:"")}: ${b}`:"";}
 /* one main button: Lock in & reveal → then New event (Free), Next round (Timed), or done (Daily) */
-function syncMainBtn(){const b=$("revealBtn");
+function syncMainBtn(){const b=$("revealBtn"),sk=$("skipBtn");
+  sk.hidden=playMode!=="free";sk.disabled=busy||!truth||revealed;
   if(!revealed){b.textContent="Lock in & reveal";b.disabled=busy||!truth;return;}
   if(playMode==="daily"){b.textContent="Done for today";b.disabled=true;return;}
   if(playMode==="timed"){b.textContent=timed.active?"Next round":"Play again";b.disabled=false;return;}
@@ -830,6 +996,12 @@ $("revealBtn").addEventListener("click",()=>{if(busy)return;
   if(!revealed){doReveal();return;}
   if(playMode==="timed"){if(timed.active){clearTimeout(timed.next);timed.round++;newGame();}else startTimed();return;}
   if(playMode==="free")newGame();});
+$("skipBtn").addEventListener("click",()=>{if(busy||revealed||playMode!=="free")return;newGame();});
+document.addEventListener("keydown",e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey||e.repeat)return;const t=e.target,tag=t&&t.tagName;
+  if(tag==="TEXTAREA"||tag==="SELECT"||(tag==="INPUT"&&t.type!=="range")||(tag==="BUTTON"&&e.key==="Enter"))return;
+  if(e.key==="Enter"){const b=$("revealBtn");if(!b.disabled){e.preventDefault();b.click();}}
+  else if(e.key==="s"||e.key==="S"){const b=$("skipBtn");if(!b.hidden&&!b.disabled){e.preventDefault();b.click();}}});
 /* degeneracy-aware scoring.
    σ_k ≈ δ_k/√Δχ²_k from nudging each parameter by δ_k against the full multi-band data (zero points refit).
    Each parameter's tolerance widens to 2σ_k when the data barely constrain it, and a fit that is as good as the
@@ -845,11 +1017,16 @@ function doReveal(){
   for(const k of free){sens[k]=sensitivity(k);if(DELTA[k])sig[k]=DELTA[k]/Math.sqrt(Math.max(sens[k],1e-3));}
   const tol=(k,base)=>Math.max(base,2*(sig[k]||0));
   const sz=g(Math.log(player.rh/truth.rh)/tol("rh",0.15));comp.push([sz,.3]);
-  rows.push(["Half-light radius",player.rh.toFixed(1)+" r_g",truth.rh.toFixed(1)+" r_g",sz,"rh"]);
+  const fr1=x=>x<100?x.toFixed(1):x.toFixed(0);
+  rows.push(["Half-light radius (2500 Å)",fr1(player.rh)+" r_g",fr1(truth.rh)+" r_g",sz,"rh"]);
+  rows.push(["… in light-days",fmtLd(ltd(player.rh)),fmtLd(ltd(truth.rh))+` (thin disk ${fmtLd(ltd(PHYS.rhPred))})`,null]);
   if(free.includes("inc")){const s=g((player.inc-truth.inc)/tol("inc",12));comp.push([s,.2]);rows.push(["Inclination",player.inc.toFixed(0)+"°",truth.inc.toFixed(0)+"°",s,"inc"]);
-    let dp=Math.abs(player.pa-truth.pa)%180;dp=Math.min(dp,180-dp);const sp=truth.inc<10?1:g(dp/tol("pa",15));comp.push([sp,.15]);rows.push(["Orientation",player.pa.toFixed(0)+"°",truth.pa.toFixed(0)+"°",sp,"pa"]);}
-  if(free.includes("rin")){const s=g((player.rin-truth.rin)/tol("rin",1.5));comp.push([s,.2]);rows.push(["ISCO",player.rin.toFixed(2)+" r_g",truth.rin.toFixed(2)+" r_g",s,"rin"]);}
-  if(free.includes("gr")){const undecided=sens.gr<4,sg=player.gr===truth.gr?1:undecided?(player.gr===0?0.5:1):player.gr===0?0.25:0;comp.push([sg,.15]);const gl=v=>v===0?"off":v>0?"at θ":"at θ+180°";rows.push(["GR, approaching side",gl(player.gr),gl(truth.gr),sg,"gr"]);}
+    /* θ is scored over 360° only when both disks have GR and the data can tell the approaching side */
+    const P=player.gr&&truth.gr&&sensitivity("side")>=4?360:180;let dp=Math.abs(player.pa-truth.pa)%P;dp=Math.min(dp,P-dp);const sp=truth.inc<10?1:g(dp/tol("pa",15));comp.push([sp,.15]);rows.push(["Orientation",player.pa.toFixed(0)+"°",truth.pa.toFixed(0)+"°",sp,"pa"]);}
+  if(free.includes("rin")){const s=g((player.rin-truth.rin)/tol("rin",1.5));comp.push([s,.2]);rows.push(["Inner edge r_in",player.rin.toFixed(2)+" r_g",truth.rin.toFixed(2)+" r_g",s,"rin"]);
+    /* r_in ≥ r_isco(a*): an inner edge closer than 9 r_g puts a lower limit on spin (not scored) */
+    const amin=r=>r>=RISCO_RETRO?"any a*":"a* ≥ "+(Math.abs(minSpin(r))<0.005?0:minSpin(r)).toFixed(2);rows.push(["Implied spin",amin(player.rin),amin(truth.rin)+` (actual ${truth.a.toFixed(2)})`,null]);}
+  if(free.includes("gr")){const undecided=sens.gr<4,sg=player.gr===truth.gr?1:undecided?(player.gr===0?0.5:1):player.gr===0?0.25:0;comp.push([sg,.15]);const gl=v=>v?"on":"off";rows.push(["GR effects",gl(player.gr),gl(truth.gr),sg,"gr"]);}
   if(free.includes("beta")){const s2=g(((player.beta||0.75)-truth.beta)/tol("beta",0.07));comp.push([s2,.15]);rows.push(["Temperature slope β",(player.beta||0.75).toFixed(2),truth.beta.toFixed(2),s2,"beta"]);}
   let W=0,S=0;for(const [s,w] of comp){S+=s*w;W+=w;}
   // fit quality: Δχ² of your model relative to the true disk; within ~ the number of free parameters counts as equally good
@@ -868,7 +1045,7 @@ function doReveal(){
 }
 
 function drawStrip(){
-  if(!ev||!frameCanvases.length)return;const pad=(NW-VIEW)/2;
+  if(busy||!ev||!frameCanvases.length)return;const pad=(NW-VIEW)/2;
   for(let d=0;d<=100;d+=20){const cv=$("shot"+d).querySelector("canvas"),ctx=cv.getContext("2d"),f=Math.round(d/100*(NF-1)),k=cv.width/VIEW;
     ctx.imageSmoothingEnabled=true;ctx.drawImage(frameCanvases[f],-pad*k,-pad*k,NW*k,NW*k);
     const c=cv.width/2;if(diskView!=="outline")drawDisk(ctx,player,c,c,k,"model-thumb",0.95);
@@ -882,19 +1059,20 @@ for(let d=0;d<=100;d+=20)$("shot"+d).addEventListener("click",()=>{stop();setT(d
 let hints=[];
 function paramErrors(){
   const g=x=>Math.exp(-0.5*x*x);let dp=((truth.pa-player.pa)%180+180)%180;if(dp>90)dp-=180;
+  let flip=false;if(player.gr&&truth.gr){const d3=((truth.pa-player.pa)%360+360)%360;flip=d3>90&&d3<270&&(ev.sideSens??(ev.sideSens=sensitivity("side")))>=4;}
   return [
     {k:"rh",e:1-g(Math.log(player.rh/truth.rh)/0.15),dir:player.rh>truth.rh?"smaller":"larger",
       txt:d=>`Disk size is off: try a ${d} half-light radius. ${d==="smaller"?"The data's spikes are sharper than your model's.":"The data's spikes are broader than your model's."}`},
     {k:"inc",e:1-g((player.inc-truth.inc)/12),dir:player.inc>truth.inc?"lower":"higher",
       txt:d=>`Inclination is off: try ${d==="higher"?"tilting the disk more (higher i)":"a more face-on disk (lower i)"}.`},
-    {k:"pa",e:truth.inc<10?0:1-g(dp/15),dir:dp>0?"clockwise":"counter-clockwise",
-      txt:d=>`Orientation is off: rotate the major axis ${d} on the map.`},
+    {k:"pa",e:truth.inc<10?0:flip?0.8:1-g(dp/15),dir:flip?"flip":dp>0?"clockwise":"counter-clockwise",
+      txt:d=>d==="flip"?"The bright end is on the wrong side: turn θ by 180°.":`Orientation is off: rotate the major axis ${d} on the map.`},
     {k:"rin",e:1-g((player.rin-truth.rin)/1.5),dir:player.rin>truth.rin?"smaller":"larger",
-      txt:d=>`The ISCO is off: try a ${d} inner edge${d==="smaller"?" (higher spin), which sharpens the spike tips":" (lower spin), which softens the spike tips"}.`},
+      txt:d=>`The inner edge is off: try a ${d} r_in${d==="smaller"?", which sharpens the spike tips":", which softens the spike tips"}.`},
     {k:"beta",e:1-g(((player.beta||0.75)-truth.beta)/0.07),dir:(player.beta||0.75)>truth.beta?"flatter":"steeper",
       txt:d=>`The temperature slope is off: try a ${d} profile (${d==="steeper"?"larger β, light more concentrated in the centre":"smaller β, light spread further out"}).`},
     {k:"gr",e:player.gr===truth.gr?0:0.75,dir:"",
-      txt:()=>player.gr===0?"The crossings are lopsided: turn GR effects on and pick the approaching side.":"The bright end is on the wrong side: switch which end of the major axis is approaching."}];
+      txt:()=>player.gr===0?"The crossings are lopsided: turn GR effects on (θ then points to the approaching side).":"These crossings look symmetric: try GR effects off."}];
 }
 $("hintBtn").addEventListener("click",()=>{
   if(!truth||revealed||!pCurve)return;let msg;
@@ -903,19 +1081,19 @@ $("hintBtn").addEventListener("click",()=>{
       let sm=0,n=0;for(let j=Math.max(0,k-2);j<=Math.min(data.t.length-1,k+2);j++){sm+=data.m[j]-interp(pCurve,data.t[j])-pFit.off;n++;}
       if(Math.abs(sm/n)>worst){worst=Math.abs(sm/n);wt=data.t[k];sgn=sm;}}
     msg=pFit.chi2nu<1.3?"Your curve already fits within the errors. The remaining clues are in the disk's shape, not the data's size.":
-      `Your model misses most around day ${Math.round(wt)}, where the data are ${sgn<0?"brighter":"fainter"} than your curve. Scrub to that day and look at the caustic crossing the centre.`;
+      `Your model misses most around ${fmtT(wt,PHYS.T<=400?0:1)}, where the data are ${sgn<0?"brighter":"fainter"} than your curve. Scrub to that day and look at the caustic crossing the centre.`;
   }else{
     const errs=paramErrors().filter(x=>freeList().includes(x.k)).sort((a,b)=>b.e-a.e),w=errs[0];
     if(w.e<0.15)msg="Every parameter is already close. Fine-tune them together to lower χ²/ν.";
     else{const prev=hints.filter(h=>h.k===w.k).length;
-      msg=prev?w.txt(w.dir):`The parameter furthest off is the ${({rh:"half-light radius",inc:"inclination",pa:"orientation",rin:"ISCO radius",gr:"GR setting",beta:"temperature slope"})[w.k]}. Ask again for which way to move it.`;
+      msg=prev?w.txt(w.dir):`The parameter furthest off is the ${({rh:"half-light radius",inc:"inclination",pa:"orientation",rin:"inner edge",gr:"GR setting",beta:"temperature slope"})[w.k]}. Ask again for which way to move it.`;
       hints.push({k:w.k});const li=document.createElement("li");li.textContent=msg;$("hintList").appendChild(li);$("hintBox").hidden=false;return;}
   }
   hints.push({k:"data"});const li=document.createElement("li");li.textContent=msg;$("hintList").appendChild(li);$("hintBox").hidden=false;
 });
 function syncSetupRows(){
-  $("rowParams").hidden=!custom;document.body.classList.toggle("custom",custom);requestAnimationFrame(()=>{if(data)drawLC();});$("fitNow").hidden=custom;
-  const names={geom:"i, θ",isco:"ISCO",gr:"GR",beta:"slope β"};
+  $("rowParams").hidden=!custom;$("rowWin").hidden=!custom;document.body.classList.toggle("custom",custom);requestAnimationFrame(()=>{if(data)drawLC();});$("fitNow").hidden=custom;
+  const names={geom:"i, θ",isco:"r_in",gr:"GR",beta:"slope β"};
   $("fitChips").innerHTML=["<span>r½</span>",...GROUPS.filter(k=>opts[k]).map(k=>`<span>${names[k]}</span>`),
     `<span class="bd">${opts.nb==="1"?"1 band (r)":opts.nb==="3"?"3 bands (gri)":"6 bands (ugrizy)"}</span>`].join("");
 }
@@ -940,6 +1118,9 @@ function syncLevelButtons(){if($("fitNow"))setTimeout(syncSetupRows,0);
   const names=[...sel].sort().map(l=>LEVELS[l].name);
   $("lvTag").textContent=(auto&&!custom?`On track (${RANKS[rankIndex()][1]}): `:"")+(custom?LEVELS.any.tag:sel.size===1?LEVELS[[...sel][0]].tag:`Mixed bag: each event is ${names.join(" or ")}. This one is ${LEVELS[level]?.name||names[0]}.`);
 }
+function fillWin(){for(const [id,i] of [["wMin",0],["wMax",1]])$(id).innerHTML=WIN_OPTS.map(([d,l])=>`<option value="${d}"${d===winRange[i]?" selected":""}>${l}</option>`).join("");}
+function setWin(i,v){winRange[i]=v;if(winRange[0]>winRange[1])winRange[1-i]=v;fillWin();try{localStorage.setItem("cc-win",winRange.join(","));}catch(e){}if(custom&&!busy)newGame();}
+try{const w=(localStorage.getItem("cc-win")||"").split(",").map(Number);if(w.length===2&&w.every(x=>WIN_OPTS.some(o=>o[0]===x)))winRange=w;}catch(e){}
 function saveSel(){try{localStorage.setItem("cc-level-pick",custom?"c":auto?"a":[...sel].sort().join(""));}catch(e){}}
 document.querySelectorAll("#modeSeg button").forEach(b=>b.addEventListener("click",()=>{if(busy||!ev)return;const o=b.dataset.o;
   if(playMode==="timed"&&timed.active){toast("Difficulty is fixed during a timed run");return;}
@@ -989,7 +1170,7 @@ function dailySeed(){return (Math.imul(dayNumber(),2654435761)^0x5eed1e)>>>0;}
 function diskRng(){return mulberry32(dailySeed()^0x7a11^(custom?0:+[...sel].sort().join("")*7919));}
 function getDaily(){try{return JSON.parse(localStorage.getItem("cc-daily")||"{}");}catch(e){return {};}}
 function setDaily(o){try{localStorage.setItem("cc-daily",JSON.stringify(o));}catch(e){}}
-function fitLabel(){return ["r½",opts.geom&&"i, θ",opts.isco&&"ISCO",opts.gr&&"GR",opts.beta&&"slope"].filter(Boolean).join(" + ")+(opts.nb!=="1"?` · ${opts.nb} bands`:"");}
+function fitLabel(){return ["r½",opts.geom&&"i, θ",opts.isco&&"r_in",opts.gr&&"GR",opts.beta&&"slope"].filter(Boolean).join(" + ")+(opts.nb!=="1"?` · ${opts.nb} bands`:"");}
 function shareLine(r){return `Caustic Crossing #${r.n} · ${r.lv?r.lv+" · ":""}${r.stars} · ${r.fit} · ${r.score} pts · ${r.hints} hint${r.hints===1?"":"s"} · streak ${r.streak}`;}
 
 const timed={active:false,round:0,total:0,combo:0,deadline:0,iv:0,ROUNDS:5,SECS:90,next:0};
@@ -1083,12 +1264,14 @@ document.querySelectorAll("#levelSeg button").forEach(b=>b.addEventListener("cli
   else if(sel.has(l)){if(sel.size===1){toast("Keep at least one level, or pick Custom");return;}sel.delete(l);}
   else sel.add(l);
   saveSel();syncLevelButtons();
-  if(ev){newDisk(playMode==="daily"?diskRng():mulberry32((Math.random()*2**31)|0));if(playMode==="daily")updateModebar();}}));
+  if(ev){if(custom&&playMode!=="daily"&&PHYS&&(PHYS.T<winRange[0]*0.999||PHYS.T>winRange[1]*1.001)){newGame();return;}   // window outside the Custom range: new system
+    newDisk(playMode==="daily"?diskRng():mulberry32((Math.random()*2**31)|0));if(playMode==="daily")updateModebar();}}));
 try{const l=localStorage.getItem("cc-level-pick");
   if(l==="c"||l==="any"){custom=true;auto=false;level="any";}
   else if(l&&/^[1234]+$/.test(l)){auto=false;sel=new Set(l.split(""));level=[...sel][0];}}catch(e){}
 if(auto&&!custom){sel=autoSet();level=[...sel][0];}
-if(!custom)Object.assign(opts,PRESET[level]);syncLevelButtons();syncFitButtons();
+if(!custom)Object.assign(opts,PRESET[level]);syncLevelButtons();syncFitButtons();fillWin();
+$("wMin").addEventListener("change",e=>setWin(0,+e.target.value));$("wMax").addEventListener("change",e=>setWin(1,+e.target.value));
 
 /* ---------- page theme ---------- */
 function applyTheme(t){if(t==="lab")document.documentElement.removeAttribute("data-ct");else document.documentElement.setAttribute("data-ct",t);
