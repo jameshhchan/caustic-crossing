@@ -8,13 +8,25 @@ Each event is a real system: a black hole of a given mass, a lens galaxy and a q
 
 ## What you fit
 
-- **Size:** the half-light radius r½ at rest-frame 2500 Å
-- **Shape:** inclination i and orientation θ
-- **Inner edge:** r_in, and the lower limit it puts on the black hole's spin
+- **Size:** the half-light radius $r_{1/2}$ at rest-frame 2500 Å
+- **Shape:** inclination $i$ and orientation $\theta$
+- **Inner edge:** $r_\mathrm{in}$, and the lower limit it puts on the black hole's spin
 - **GR effects:** Doppler boosting and gravitational redshift, on or off
-- **Temperature slope:** T ∝ r^−β, with up to six Rubin LSST bands (ugrizy)
+- **Temperature slope:** $T \propto r^{-\beta}$, with up to six Rubin LSST bands (ugrizy)
 
 Choose Easy, Medium, Hard or Extreme, or set your own rules in Custom. Earn points and climb from Newbie to Einstein's favourite. Daily and Timed modes are there for a challenge.
+
+Hover over the event card above the map to see every parameter of the system: black-hole mass $M_\mathrm{BH}$, redshifts $z_\mathrm{s}$ and $z_\mathrm{l}$, lens convergence $\kappa$ and shear $\gamma$, the stars and their motions, and the Einstein radius $R_\mathrm{E}$.
+
+## Share an event
+
+Click **Share** next to the light curve to copy a link to the exact event you are playing: same lens, black hole, disk and data. Anyone who opens the link gets the identical event, which makes it easy to:
+
+- give a whole class the same quasar and compare their answers,
+- pick good examples in advance and put the links on slides or worksheets,
+- challenge a friend to beat your fit.
+
+Daily mode also gives everyone the same event each day, as long as they choose the same difficulty.
 
 ## Requirements
 

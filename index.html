@@ -60,6 +60,16 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--model);outline-
 .evcard>div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .evcard b{font-weight:500;color:var(--muted);display:inline-block;width:52px;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px}
 .evcard i{font-style:normal;color:var(--muted)}
+.evcard{position:relative;cursor:help}
+.evcard sub,.evpop sub,.ctl sub,.fitchips sub,#rtab sub,.hint sub,#best sub,#modeSeg sub{font-size:.72em;line-height:0;vertical-align:-.28em}
+.evcard .more{color:var(--muted);margin-left:6px;font-size:10.5px}
+.evcard>.evpop{display:none;position:absolute;z-index:30;left:-6px;top:calc(100% + 4px);white-space:normal;overflow:visible;width:min(520px,calc(100vw - 40px));
+  background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 14px 12px;box-shadow:0 10px 30px rgba(0,0,0,.35);font-family:var(--body);font-size:12.5px;color:var(--fg)}
+.evcard:hover>.evpop,.evcard:focus-within>.evpop,.evcard.open>.evpop{display:block}
+.evpop h4{margin:8px 0 3px;font:500 10.5px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.evpop h4:first-child{margin-top:0}
+.evpop dl{display:grid;grid-template-columns:132px 1fr;gap:2px 12px;margin:0}
+.evpop dt{color:var(--muted)}.evpop dd{margin:0;font-family:var(--mono);font-size:12px}
+.evpop dd small{font-family:var(--body);color:var(--muted);font-size:11.5px}
 .head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
 h2{font-family:var(--display);font-weight:400;font-size:12px;letter-spacing:.09em;text-transform:uppercase;margin:0;color:var(--muted)}
 .mono{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -238,7 +248,7 @@ body.custom #lc{height:clamp(130px,calc(100vh - 680px),300px)}
   <div class="grid">
     <section class="card">
       <div class="head"><h2>Source-plane map</h2></div>
-      <div class="evcard mono"><div id="cardQ"></div><div id="cardL"></div></div>
+      <div class="evcard mono" id="evcard" tabindex="0" aria-label="Event parameters: hover or click for all"><div id="cardQ"></div><div id="cardL"></div><div class="evpop" id="evpop" role="tooltip"></div></div>
       <div class="mapwrap">
         <canvas id="map" aria-label="Evolving magnification map centred on the quasar. Scroll or pinch to zoom, drag to pan, double-click to reset."></canvas>
         <div class="zoomctl"><button id="zIn" aria-label="Zoom in" title="Zoom in (or scroll)">+</button><button id="zOut" aria-label="Zoom out" title="Zoom out">−</button><button id="zReset" aria-label="Reset zoom" title="Reset (or double-click)">1×</button></div>
@@ -289,7 +299,7 @@ body.custom #lc{height:clamp(130px,calc(100vh - 680px),300px)}
             <span class="fixed">r½</span>
             <div class="seg" role="group" aria-label="Extra parameters to fit" id="modeSeg">
               <button id="m-geom" data-o="geom" data-n="i, θ" aria-pressed="false">+ i, θ</button>
-              <button id="m-isco" data-o="isco" data-n="r_in" aria-pressed="false">+ r_in</button>
+              <button id="m-isco" data-o="isco" data-n="r_in" aria-pressed="false">+ r<sub>in</sub></button>
               <button id="m-gr" data-o="gr" data-n="GR" aria-pressed="false">+ GR</button>
               <button id="m-beta" data-o="beta" data-n="slope" aria-pressed="false" title="Temperature slope β, T ∝ r^−β">+ slope</button>
             </div>
@@ -310,7 +320,7 @@ body.custom #lc{height:clamp(130px,calc(100vh - 680px),300px)}
             <div class="ctl" id="c-rh"><label for="s-rh" id="lbl-rh">Half-light r½<small>2500 Å</small></label><output id="o-rh"></output><input type="range" id="s-rh" min="0.6" max="2.6" step="0.002"></div>
             <div class="ctl" id="c-inc"><label for="s-inc">Inclination<small>i</small></label><output id="o-inc"></output><input type="range" id="s-inc" min="0" max="80" step="1"></div>
             <div class="ctl" id="c-pa"><label for="s-pa">Orientation<small>θ</small></label><output id="o-pa"></output><input type="range" id="s-pa" min="0" max="179" step="1" title="With GR on, θ runs 0–360°: it also points to the approaching side"></div>
-            <div class="ctl" id="c-rin"><label for="s-rin">Inner edge<small>r_in</small></label><output id="o-rin"></output><input type="range" id="s-rin" min="1.25" max="12" step="0.05"></div>
+            <div class="ctl" id="c-rin"><label for="s-rin">Inner edge<small>r<sub>in</sub></small></label><output id="o-rin"></output><input type="range" id="s-rin" min="1.25" max="12" step="0.05"></div>
             <div class="ctl" id="c-beta"><label for="s-beta">Slope β<small>T ∝ r^−β</small></label><output id="o-beta"></output><input type="range" id="s-beta" min="0.3" max="1.5" step="0.01"></div>
             <div class="ctl" id="c-gr"><label>GR effects<small>Doppler + redshift</small></label><output id="o-gr"></output>
               <div class="seg" role="group" aria-label="GR effects">
@@ -356,14 +366,15 @@ const D2R=Math.PI/180;
 /* each event draws its own lens: total convergence κ, fraction in stars, shear γ, source speed, star dispersion */
 /* physical system → map scale: ~12 px per predicted r-band half-light radius, coarser only when needed to keep
    star motion ≤ 2.5 px per frame with ≤ 101 frames; light curve sampled every ~1.2 px of source motion */
-function setPhys(P,lens){
-  PHYS=P;lens.len=P.L;lens.sig=P.rsig*P.L/100/Math.SQRT2;
-  const px=Math.max(P.rhoR/12,P.rsig*P.L/(2.5*100),P.L/(60*100));
-  NF=Math.min(101,Math.max(41,Math.ceil(P.rsig*P.L/px/2.5)+1,Math.ceil(P.L/px/60)+1));
-  NS=Math.min(501,Math.max(201,Math.ceil(P.L/px/1.2)+1));
-  PX=px;LW=NW*PX/2;RG=P.eps;PXPERRG=RG/PX;lens.rpp=P.rhoR/PX<9?20:12;
-  PREVFOV=nice125(4*P.rhPred*Math.pow(lr("r"),4/3));
+function scaleFor(P,lens){
+  lens.len=P.L;lens.sig=P.rsig*P.L/100/Math.SQRT2;
+  const px=Math.max(P.rhoR/12,P.rsig*P.L/(2.5*100),P.L/(60*100));lens.rpp=P.rhoR/px<9?20:12;
+  return {PHYS:P,PX:px,LW:NW*px/2,RG:P.eps,PXPERRG:P.eps/px,
+    NF:Math.min(101,Math.max(41,Math.ceil(P.rsig*P.L/px/2.5)+1,Math.ceil(P.L/px/60)+1)),
+    NS:Math.min(501,Math.max(201,Math.ceil(P.L/px/1.2)+1)),
+    PREVFOV:nice125(4*P.rhPred*Math.pow(BANDS.r.l*1e4/(1+P.zs)/LREF,4/3))};
 }
+function applyScale(S){({PHYS,PX,LW,RG,PXPERRG,NF,NS,PREVFOV}=S);}
 let PREVFOV=75;
 function randLens(rng){
   for(;;){const kt=0.2+rng()*0.55,g=0.1+rng()*0.6,a=1-kt-g,b=1-kt+g;
@@ -396,8 +407,9 @@ function einsteinRadius(zl,zs,m){const Dl=comoving(zl)/(1+zl),Ds=comoving(zs)/(1
 function thinDiskRh(M,lamA){const G=6.674e-8,h=6.626e-27,c=2.998e10,Mdot=0.1*1.26e38*M/(0.1*c*c),lam=lamA*1e-8;
   return 2.44*Math.cbrt(45*G*lam**4*M*1.989e33*Mdot/(16*Math.PI**6*h*c*c))/(RG1*M);}
 const LREF=2500;   // r½ is quoted at rest-frame 2500 Å
-function drawPhys(rng){
-  const [w0,w1]=shared?shared.win:custom&&playMode!=="daily"?winRange:[WIN_MIN,WIN_MAX],T=Math.round(w0*Math.pow(w1/w0,rng()));let best=null;
+function curWin(){return shared?shared.win:custom&&playMode!=="daily"?winRange:[WIN_MIN,WIN_MAX];}
+function drawPhys(rng,win){
+  const [w0,w1]=win,T=Math.round(w0*Math.pow(w1/w0,rng()));let best=null;
   for(let i=0;i<500;i++){
     const zl=0.2+rng()*0.8,z0=Math.max(1,zl+0.4),zs=z0+rng()*(3-z0),M=10**(7+rng()*Math.log10(300)),v=300+rng()*700,rsig=0.3+rng()*0.5;
     const RE=einsteinRadius(zl,zs,MMEAN),eps=RG1*M/RE,rhPred=thinDiskRh(M,LREF),L=v*1e5*T*86400/RE;
@@ -432,6 +444,16 @@ const SUP={"0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7
 function sci(x){const e=Math.floor(Math.log10(x)),m=x/10**e,mr=+m.toFixed(1);return (mr===1?"":mr+"×")+"10"+String(e).split("").map(c=>SUP[c]).join("");}
 const ltd=rg=>rg*RG1*PHYS.M/LTDAY;                                // r_g → light-days
 function fmtLd(x){return x<0.1?x.toFixed(3):x<1?x.toFixed(2):x<10?x.toFixed(1):x.toFixed(0);}
+/* notation: "r_g", "R_E", "M_BH", "z_s", "r_in", "κ*", "σ*" → real subscripts (HTML), or drawn subscripts on canvas */
+const SUBRE=/([A-Za-zκσ])_([A-Za-z]+)|([κσ])\*/g;
+function sub(t){return String(t).replace(SUBRE,(m,a,b,c)=>c?`${c}<sub>*</sub>`:`${a}<sub>${b}</sub>`);}
+function subText(t){return String(t).replace(SUBRE,(m,a,b,c)=>c?`${c}*`:a+b);}   // plain text for measuring fallback
+function fillSub(ctx,t,x,y){   // like fillText, but X_ab is drawn with ab as a smaller, lowered subscript; honours textAlign
+  const parts=[];let last=0;String(t).replace(SUBRE,(m,a,b,c,i)=>{parts.push([t.slice(last,i)+(c||a),0]);parts.push([c?"*":b,1]);last=i+m.length;return m;});parts.push([t.slice(last),0]);
+  const f0=ctx.font,px=parseFloat(/(\d+(?:\.\d+)?)px/.exec(f0)?.[1]||12),fs=f0.replace(/(\d+(?:\.\d+)?)px/,(px*0.74).toFixed(1)+"px");
+  const W=parts.map(([s,u])=>{ctx.font=u?fs:f0;return ctx.measureText(s).width;}),tot=W.reduce((a,v)=>a+v,0),al=ctx.textAlign;
+  let cx=al==="right"||al==="end"?x-tot:al==="center"?x-tot/2:x;ctx.textAlign="left";
+  parts.forEach(([s,u],k)=>{ctx.font=u?fs:f0;ctx.fillText(s,cx,y+(u?px*0.28:0));cx+=W[k];});ctx.font=f0;ctx.textAlign=al;}
 function nice125(x){const p=10**Math.floor(Math.log10(x)),f=x/p;return (f<2?1:f<5?2:5)*p;}
 
 /* ---------- inverse ray shooting (near stars exact, far stars bilinear per block) ---------- */
@@ -495,17 +517,29 @@ function getPool(){
   if(pool!==null)return pool;
   try{const src="var shootFrame="+shootFrame.toString()+";onmessage=function(e){var r=shootFrame(e.data);postMessage({c:r.c,rays:r.rays,id:e.data.id},[r.c.buffer]);};";
     const url=URL.createObjectURL(new Blob([src],{type:"text/javascript"}));
-    const n=Math.max(2,Math.min(8,navigator.hardwareConcurrency||4));pool=[];for(let i=0;i<n;i++)pool.push(new Worker(url));
+    const n=Math.max(2,Math.min(8,navigator.hardwareConcurrency||4));pool=[];
+    for(let i=0;i<n;i++){const w=new Worker(url);w.busy=false;w.job=null;
+      w.onmessage=e=>{const job=w.job;w.busy=false;w.job=null;if(job){job.out[e.data.id]={c:e.data.c,rays:e.data.rays};job.done++;job.onProg(job.done/job.tasks.length);
+          if(job.done===job.tasks.length){jobs.splice(jobs.indexOf(job),1);job.res(job.out);}}pump();};
+      w.onerror=()=>{if(pool===false)return;pool=false;const js=jobs.splice(0);for(const j of js)runMain(j.tasks,j.onProg).then(j.res);};
+      pool.push(w);}
   }catch(e){pool=false}
   return pool;
 }
-function runTasks(tasks,onProg){
-  const ws=getPool();if(!ws)return runMain(tasks,onProg);
-  return new Promise(res=>{const out=new Array(tasks.length);let next=0,done=0,failed=false;
-    ws.forEach(w=>{
-      w.onmessage=e=>{out[e.data.id]={c:e.data.c,rays:e.data.rays};done++;onProg(done/tasks.length);if(done===tasks.length)res(out);else if(next<tasks.length)w.postMessage(tasks[next++]);};
-      w.onerror=()=>{if(!failed){failed=true;pool=false;runMain(tasks,onProg).then(res);}};
-      if(next<tasks.length)w.postMessage(tasks[next++]);});});
+/* Jobs share the workers. Each job has a priority (an object, so it can be raised while running): zoom re-renders 2,
+   the event you are waiting for 1, background preparation of the next event 0. Background work never takes every
+   worker, so the page stays responsive while you play. */
+const jobs=[];let jobSeq=0;
+function runTasks(tasks,onProg,pr){
+  const ws=getPool();if(!ws)return runMain(tasks,onProg||(()=>{}));
+  return new Promise(res=>{jobs.push({id:++jobSeq,tasks,out:new Array(tasks.length),next:0,done:0,onProg:onProg||(()=>{}),res,pr:pr||{v:1}});pump();});
+}
+function pump(){if(!pool)return;
+  for(const w of pool){if(w.busy)continue;
+    const open=jobs.filter(j=>j.next<j.tasks.length);if(!open.length)return;
+    open.sort((a,b)=>b.pr.v-a.pr.v||a.id-b.id);let job=open[0];
+    if(job.pr.v<=0&&pool.filter(x=>x.busy&&x.job&&x.job.pr.v<=0).length>=Math.max(1,pool.length-1))return;
+    const k=job.next++,t=job.tasks[k];t.id=k;w.busy=true;w.job=job;w.postMessage(t);}
 }
 async function runMain(tasks,onProg){const out=[];for(let i=0;i<tasks.length;i++){out.push(shootFrame(tasks[i]));onProg((i+1)/tasks.length);await new Promise(r=>setTimeout(r,0));}return out;}
 
@@ -584,9 +618,9 @@ function srcPos(t){return {x:ev.s0x+(ev.s1x-ev.s0x)*t/100,y:ev.s0y+(ev.s1y-ev.s0
 function frameAt(t){const fp=t/100*(NF-1),f0=Math.min(NF-2,Math.floor(fp));return {f0,fr:fp-f0};}
 function offsetIn(f,t){const s=srcPos(t),c=srcPos(f*100/(NF-1));return {x:(s.x-c.x)/PX,y:(s.y-c.y)/PX};}
 
-async function buildEvent(seed,lens,onProg,last=true){
+async function buildEvent(seed,lens,S,onProg,last,pr){
   const rng=mulberry32(seed^0x51ed270b),a=Math.abs(1-lens.kt-lens.g),b=Math.abs(1-lens.kt+lens.g);
-  const rho=PHYS.rhoR,Cr=Math.max(0.25,3*rho),ext=lens.len/2+Cr+LW+0.15+PHYS.rsig*lens.len;
+  const rho=S.PHYS.rhoR,Cr=Math.max(0.25,3*rho),ext=lens.len/2+Cr+S.LW+0.15+S.PHYS.rsig*lens.len;
   const R=Math.hypot((ext+1.5)/a+2.5,(ext+1.5)/b+2.5)+4,n=Math.round(lens.k*R*R);   // room for the images' shift on near-critical lenses
   const NP=256,LP=lens.len/2+Cr+3*rho,opx=2*LP/NP,rb=Math.max(1,Math.round(rho/opx));let pick=null;
   // draw star fields until the 100-day path crosses real caustics (sparse fields can leave a quiet patch)
@@ -595,7 +629,7 @@ async function buildEvent(seed,lens,onProg,last=true){
     let mvx=0,mvy=0;
     for(let i=0;i<n;i++){const r=R*Math.sqrt(rng()),t=2*Math.PI*rng();st.x[i]=r*Math.cos(t);st.y[i]=r*Math.sin(t);st.vx[i]=lens.sig*gauss(rng);st.vy[i]=lens.sig*gauss(rng);st.m[i]=chabrierSample(rng)/MMEAN;mvx+=st.vx[i];mvy+=st.vy[i];}
     for(let i=0;i<n;i++){st.vx[i]-=mvx/n;st.vy[i]-=mvy/n;}
-    const [orr]=await runTasks([rayTask(lens,st,50,0,0,LP,NP,10,0)],()=>{});const ov=orr.c;
+    const [orr]=await runTasks([rayTask(lens,st,50,0,0,LP,NP,10,0)],()=>{},pr);const ov=orr.c;
     // smooth the overview to the disk size, then score candidate paths by how much the brightness swings along them
     const I=new Float64Array((NP+1)*(NP+1));for(let y=0;y<NP;y++){let row=0;for(let x=0;x<NP;x++){row+=ov[y*NP+x];I[(y+1)*(NP+1)+x+1]=I[y*(NP+1)+x+1]+row;}}
     const sm=(x,y)=>{const x0=Math.max(0,x-rb),x1=Math.min(NP,x+rb+1),y0=Math.max(0,y-rb),y1=Math.min(NP,y+rb+1);
@@ -613,17 +647,36 @@ async function buildEvent(seed,lens,onProg,last=true){
     if(bs>0.6)break;
   }
   if(pick.bs<0.3&&!last)return false;   // nothing happens along any path: let the caller draw a new system
-  const {best,st,ov}=pick;
-  ev={...best,lens,ns:n,ov,NP,LP,st,seed0:seed,bs:pick.bs};resetZoom(false);
+  const {best,st,ov}=pick,{NF,NS,PX,LW}=S;   // this event's own scales (not the globals of the event being played)
+  const E={...best,lens,ns:n,ov,NP,LP,st,seed0:seed,bs:pick.bs};
+  const srcPos=t=>({x:E.s0x+(E.s1x-E.s0x)*t/100,y:E.s0y+(E.s1y-E.s0y)*t/100});
+  const frameAt=t=>{const fp=t/100*(NF-1),f0=Math.min(NF-2,Math.floor(fp));return {f0,fr:fp-f0};};
+  const offsetIn=(f,t)=>{const s=srcPos(t),c=srcPos(f*100/(NF-1));return {x:(s.x-c.x)/PX,y:(s.y-c.y)/PX};};
   const tasks=[];for(let f=0;f<NF;f++){const t=f*100/(NF-1),s=srcPos(t);tasks.push(rayTask(lens,st,t,s.x,s.y,LW,NW,lens.rpp,f));}
-  const cs=await runTasks(tasks,onProg);ev.frames=cs.map(r=>r.c);ev.frames3=null;ev.rays=cs.reduce((a,r)=>a+r.rays,0)/cs.length;
+  const cs=await runTasks(tasks,onProg,pr);const ev=E;ev.frames=cs.map(r=>r.c);ev.frames3=null;ev.rays=cs.reduce((a,r)=>a+r.rays,0)/cs.length;
   // per-sample lookup for light curves
   // sub-pixel source position in each of the two frames: base pixel + bilinear weights
   const C=(NW/2)*NW+NW/2;ev.f0=new Int32Array(NS);ev.fr=new Float64Array(NS);ev.b0=new Int32Array(NS);ev.b1=new Int32Array(NS);ev.w0=new Float64Array(NS*2);ev.w1=new Float64Array(NS*2);
   for(let k=0;k<NS;k++){const t=k*100/(NS-1),{f0,fr}=frameAt(t),o0=offsetIn(f0,t),o1=offsetIn(f0+1,t);ev.f0[k]=f0;ev.fr[k]=fr;
     const x0=Math.floor(o0.x),y0=Math.floor(o0.y),x1=Math.floor(o1.x),y1=Math.floor(o1.y);
     ev.b0[k]=C+y0*NW+x0;ev.w0[2*k]=o0.x-x0;ev.w0[2*k+1]=o0.y-y0;ev.b1[k]=C+y1*NW+x1;ev.w1[2*k]=o1.x-x1;ev.w1[2*k+1]=o1.y-y1;}
+  return E;
 }
+/* a complete map for a seed: lens, physical system and frames. Same seed + window range → same map, whether it is
+   built in the foreground or prepared in the background. */
+async function prepareMap(seed,win,onProg,pr){
+  const rng=mulberry32(seed);let lens=randLens(rng),S=scaleFor(drawPhys(rng,win),lens);
+  for(let a=0;;a++){const E=await buildEvent(seed+a*7919,lens,S,onProg,a===2,pr);if(E!==false)return {seed,lens,S,E,rng,win};
+    lens=randLens(rng);S=scaleFor(drawPhys(rng,win),lens);}
+}
+/* background preparation of the next free-play event */
+let pre=null,preTimer=0;
+const sameWin=(a,b)=>a[0]===b[0]&&a[1]===b[1];
+function nextWin(){return custom&&playMode!=="daily"?winRange:[WIN_MIN,WIN_MAX];}
+function schedulePrefetch(){clearTimeout(preTimer);if(playMode==="daily")return;
+  preTimer=setTimeout(()=>{if(playMode==="daily"||(pre&&sameWin(pre.win,nextWin())))return;
+    const p={win:nextWin().slice(),seed:(Math.random()*2**31)|0,prog:0,onProg:null,pr:{v:0}};
+    p.promise=prepareMap(p.seed,p.win,f=>{p.prog=f;if(p.onProg)p.onProg(f);},p.pr).catch(()=>null);pre=p;},1200);}
 function curveOf(p,b){
   const K=buildKernel(p,b?lr(b):1),out=new Float64Array(NS),off=K.off,w=K.w,m=off.length,off3=K.off3,w3=K.w3,m3=off3.length,memo=new Map();
   const F3=m3?frames3():null;   // coarse taps read a 3×3-averaged map, so sharp folds are not aliased
@@ -669,9 +722,9 @@ function presetFor(l,rng){const o={geom:false,isco:false,gr:false,beta:false,nb:
   o.nb=l==="4"?"6":o.beta?"3":"1";return o;}
 const LEVELS={
   "1":{name:"Easy",camp:1,lo:0.01,hi:0.015,dt:1,tag:"Crayons allowed. Just find the size.",fit:"Fit r½ · nightly, 1–1.5% errors"},
-  "2":{name:"Medium",camp:2,lo:0.015,hi:0.022,dt:2,tag:"One mystery parameter joins the size. Check the Parameters row.",fit:"Fit r½ + 1 random extra (i θ, r_in, GR or slope) · every 2 nights with weather losses, 1.5–2.2% errors"},
+  "2":{name:"Medium",camp:2,lo:0.015,hi:0.022,dt:2,tag:"One mystery parameter joins the size. Check the Parameters row.",fit:"Fit r½ + 1 random extra (i θ, rᵢₙ, GR or slope) · every 2 nights with weather losses, 1.5–2.2% errors"},
   "3":{name:"Hard",camp:3,lo:0.022,hi:0.03,dt:3,tag:"Two mystery parameters, sparse and noisy. Reviewer 2 is watching.",fit:"Fit r½ + 2 random extras · every 4 nights with an extra gap, 2.2–3% errors"},
-  "4":{name:"Extreme",camp:4,lo:0.026,hi:0.035,dt:3,tag:"All the knobs. No mercy. Good luck.",fit:"Fit r½, i, θ, r_in, GR, slope · 6 bands (ugrizy) · every 5 nights with an extra gap, 2.6–3.5% errors"},
+  "4":{name:"Extreme",camp:4,lo:0.026,hi:0.035,dt:3,tag:"All the knobs. No mercy. Good luck.",fit:"Fit r½, i, θ, rᵢₙ, GR, slope · 6 bands (ugrizy) · every 5 nights with an extra gap, 2.6–3.5% errors"},
   any:{name:"Custom",tag:"Your rules. Pick the parameters below.",fit:"Your choice of parameters · random data"}};
 const LVNAMES=["","Easy","Medium","Hard","Extreme"];
 function makeData(rng){
@@ -722,17 +775,37 @@ const fmtMu=v=>v<10?v.toFixed(1):v.toFixed(0);
 async function newGame(seedIn){
   if(busy)return;busy=true;syncMainBtn();stop();clearTimed();
   $("revealBtn").disabled=true;$("loading").hidden=false;$("loadBar").style.width="0%";
-  const seed=(typeof seedIn==="number"?seedIn:null)??(playMode==="daily"?dailySeed():(Math.random()*2**31)|0),rng=mulberry32(seed);let lens=randLens(rng);curSeed=seed;
-  setPhys(drawPhys(rng),lens);
-  $("loadTxt").textContent=`Ray-shooting ${NF} frames of the moving star field…`;
-  try{for(let a=0;a<3;a++){if(await buildEvent(seed+a*7919,lens,f=>{$("loadBar").style.width=(f*100).toFixed(0)+"%";if(Math.round(f*NF)%8===1)$("loadTxt").textContent=pick(LOADQUIPS)+` (${Math.round(f*NF)}/${NF})`;},a===2)!==false)break;lens=randLens(rng);setPhys(drawPhys(rng),lens);}}
+  const win=curWin().slice();let M=null,shown=-1;
+  $("loadTxt").textContent=pick(LOADQUIPS);
+  const onProg=f=>{$("loadBar").style.width=(f*100).toFixed(0)+"%";const q=Math.floor(f*12);if(q!==shown){shown=q;$("loadTxt").textContent=pick(LOADQUIPS)+` (${Math.round(f*100)}%)`;}};
+  try{
+    if(typeof seedIn!=="number"&&playMode!=="daily"&&pre&&sameWin(pre.win,win)){const p=pre;pre=null;p.pr.v=1;p.onProg=onProg;onProg(p.prog);M=await p.promise;}
+    if(!M)M=await prepareMap((typeof seedIn==="number"?seedIn:null)??(playMode==="daily"?dailySeed():(Math.random()*2**31)|0),win,onProg,{v:1});}
   catch(e){$("loadTxt").textContent="Ray shooting failed. Press New event to try again.";busy=false;$("revealBtn").disabled=false;$("revealBtn").textContent="New event";return;}
+  applyScale(M.S);ev=M.E;curSeed=M.seed;resetZoom(false);
+  const seed=M.seed,rng=M.rng,lens=M.lens;
   paintFrames();
   const P=PHYS,sep=" <i>·</i> ";
-  $("cardQ").innerHTML=`<b>Quasar</b>M_BH ${sci(P.M)} M☉${sep}z_s ${P.zs.toFixed(2)}${sep}1 R_E = ${fmtLd(P.RE/LTDAY)} lt-d = ${Math.round(1/P.eps)} r_g`;
-  $("cardQ").title=`Black-hole mass ${sci(P.M)} M☉ at redshift ${P.zs.toFixed(2)}. Its gravitational radius r_g = GM/c² = ${sci(RG1*P.M)} cm; one Einstein radius is ${Math.round(1/P.eps)} r_g.`;
-  $("cardL").innerHTML=`<b>Lens</b>z_l ${P.zl.toFixed(2)}${sep}κ ${lens.kt.toFixed(2)}${sep}κ*/κ ${lens.fs.toFixed(2)}${sep}γ ${lens.g.toFixed(2)}${sep}${ev.ns} stars${sep}v ${Math.round(P.v)} km/s${sep}σ* ${Math.round(P.rsig*P.v/Math.SQRT2)} km/s`;
-  $("cardL").title=`Lens galaxy at z = ${P.zl.toFixed(2)}: convergence κ ${lens.kt.toFixed(2)}, ${Math.round(lens.fs*100)}% of it in stars (${ev.ns} stars, Chabrier 0.1–1 M☉, mean ${MMEAN.toFixed(2)} M☉), shear γ ${lens.g.toFixed(2)}${1-lens.kt-lens.g<0?", saddle-point image":""}. Bulk motion v: the effective transverse speed of the quasar relative to the lens, ${Math.round(P.v)} km/s (it carries the source across the caustic network). Random motion σ*: the stars' own velocity dispersion, ${Math.round(P.rsig*P.v/Math.SQRT2)} km/s per axis (it makes the caustic network change shape); one Einstein radius = ${sci(P.RE)} cm = ${fmtLd(P.RE/LTDAY)} light-days, crossed in ${(P.RE/(P.v*1e5)/3.156e7).toFixed(1)} yr. In this window the quasar moves ${P.L<0.1?P.L.toFixed(3):P.L.toFixed(2)} R_E.`;
+  const sig=Math.round(P.rsig*P.v/Math.SQRT2),moved=P.L<0.1?P.L.toFixed(3):P.L.toFixed(2);
+  $("cardQ").innerHTML=sub(`<b>Quasar</b>M_BH ${sci(P.M)} M☉${sep}z_s ${P.zs.toFixed(2)}${sep}v ${Math.round(P.v)} km/s`)+`<span class="more">all parameters ⓘ</span>`;
+  $("cardL").innerHTML=sub(`<b>Lens</b>z_l ${P.zl.toFixed(2)}${sep}κ ${lens.kt.toFixed(2)}${sep}κ*/κ ${lens.fs.toFixed(2)}${sep}γ ${lens.g.toFixed(2)}`);
+  $("cardQ").removeAttribute("title");$("cardL").removeAttribute("title");
+  $("evpop").innerHTML=sub(`<h4>Quasar</h4><dl>
+    <dt>Black-hole mass</dt><dd>M_BH = ${sci(P.M)} M☉</dd>
+    <dt>Redshift</dt><dd>z_s = ${P.zs.toFixed(2)}</dd>
+    <dt>Gravitational radius</dt><dd>r_g = GM/c² = ${sci(RG1*P.M)} cm</dd></dl>
+  <h4>Lens galaxy</h4><dl>
+    <dt>Redshift</dt><dd>z_l = ${P.zl.toFixed(2)}</dd>
+    <dt>Convergence</dt><dd>κ = ${lens.kt.toFixed(2)} <small>total</small></dd>
+    <dt>In stars</dt><dd>κ*/κ = ${lens.fs.toFixed(2)}</dd>
+    <dt>Shear</dt><dd>γ = ${lens.g.toFixed(2)}${1-lens.kt-lens.g<0?" <small>saddle-point image</small>":" <small>minimum image</small>"}</dd>
+    <dt>Stars</dt><dd>${ev.ns} <small>Chabrier, 0.1–1 M☉, mean ${MMEAN.toFixed(2)} M☉</small></dd></dl>
+  <h4>Motion</h4><dl>
+    <dt>Bulk velocity</dt><dd>v = ${Math.round(P.v)} km/s <small>carries the quasar across the caustics</small></dd>
+    <dt>Stellar motions</dt><dd>σ* = ${sig} km/s <small>per axis; reshapes the caustics</small></dd>
+    <dt>In this window</dt><dd>${moved} R_E <small>(one R_E takes ${(P.RE/(P.v*1e5)/3.156e7).toFixed(1)} yr)</small></dd></dl>
+  <h4>Scale</h4><dl>
+    <dt>Einstein radius</dt><dd>R_E = ${fmtLd(P.RE/LTDAY)} lt-d = ${sci(P.RE)} cm = ${Math.round(1/P.eps)} r_g</dd></dl>`);
   for(let d=0;d<=100;d+=20)$("shot"+d).querySelector("span").textContent=fmtShort(d);
   $("loading").hidden=true;busy=false;
   newDisk(playMode==="daily"?diskRng():rng);
@@ -741,6 +814,7 @@ async function newGame(seedIn){
   newGame.retry=0;
   if(playMode==="timed")startRound();
   updateModebar();
+  schedulePrefetch();
 }
 /* measured difficulty: nudge each fitted parameter and see how much χ² changes (zero point refit) */
 const NUDGE={rh:t=>({...t,rh:t.rh*1.15}),inc:t=>({...t,inc:t.inc>45?t.inc-10:t.inc+10}),pa:t=>({...t,pa:(t.pa+12)%(t.gr?360:180)}),side:t=>({...t,pa:(t.pa+180)%360}),
@@ -883,7 +957,7 @@ function drawMap(){
   ctx.font=`${11*d}px "IBM Plex Mono",monospace`;ctx.textBaseline="middle";ctx.fillText("caustic flow",ax+26*d,ay);
   const bl=nice125(w*0.3/k*PX),sb=bl/PX*k;
   ctx.lineWidth=2*d;ctx.beginPath();ctx.moveTo(14*d,w-16*d);ctx.lineTo(14*d+sb,w-16*d);ctx.stroke();
-  ctx.textBaseline="bottom";ctx.fillText(`${+bl.toPrecision(2)} R_E = ${Math.round(bl/RG)} r_g`,14*d,w-22*d);
+  ctx.textBaseline="bottom";fillSub(ctx,`${+bl.toPrecision(2)} R_E = ${Math.round(bl/RG)} r_g`,14*d,w-22*d);
   if(zoom>1.01){ctx.textAlign="right";ctx.textBaseline="top";ctx.fillText(`${zoom.toFixed(1)}×${sharpOK()?" · sharp":playing?"":" · sharpening…"}`,w-12*d,28*d);ctx.textAlign="left";}
   ctx.textAlign="right";ctx.textBaseline="top";ctx.fillText(fmtT(tNow),w-12*d,12*d);ctx.textAlign="left";
 }
@@ -962,7 +1036,7 @@ function renderDisk(cv,p,role){
   ctx.lineWidth=1;ctx.setLineDash([2,3]);
   for(const sp of outlineSpecs(p,role)){const a=sp.rh*W/(2*fov);ctx.strokeStyle=sp.col;ctx.beginPath();ctx.ellipse(W/2,W/2,a,Math.max(a*Math.cos(p.inc*D2R),.5),p.pa*D2R,0,Math.PI*2);ctx.stroke();}
   ctx.setLineDash([]);
-  ctx.fillStyle="rgba(233,230,221,.6)";ctx.font='10px "IBM Plex Mono",monospace';ctx.fillText("±"+fov+" r_g",6,W-7);
+  ctx.fillStyle="rgba(233,230,221,.6)";ctx.font='10px "IBM Plex Mono",monospace';fillSub(ctx,"±"+fov+" r_g",6,W-7);
 }
 
 /* ---------- controls ---------- */
@@ -977,14 +1051,14 @@ function syncControls(){
 }
 function updateOutputs(){
   const s=solveDisk(player.rin,player.rh,player.beta);
-  $("o-rh").textContent=`${s.rhAct<100?s.rhAct.toFixed(1):s.rhAct.toFixed(0)} r_g`;$("o-rh").title=PHYS?`${fmtLd(ltd(s.rhAct))} light-days · ${(s.rhAct*RG).toPrecision(2)} R_E (thin-disk prediction ${PHYS.rhPred.toFixed(0)} r_g)`:"";
+  $("o-rh").innerHTML=sub(`${s.rhAct<100?s.rhAct.toFixed(1):s.rhAct.toFixed(0)} r_g`);$("o-rh").title=PHYS?`${fmtLd(ltd(s.rhAct))} light-days · ${(s.rhAct*RG).toPrecision(2)} Einstein radii (thin-disk prediction ${PHYS.rhPred.toFixed(0)} gravitational radii)`:"";
   $("lbl-rh").title=PHYS?`Half-light radius at rest-frame 2500 Å. At z = ${PHYS.zs.toFixed(2)} the r band sees ${Math.round(BANDS.r.l*1e4/(1+PHYS.zs))} Å; each band's size scales as λ^(1/β).`:"Half-light radius at rest-frame 2500 Å";
   const fr=freeList();
   $("o-inc").textContent=fr.includes("inc")?player.inc.toFixed(0)+"°":`given ${player.inc}°`;
   $("s-pa").max=player.gr?359:179;
   $("o-pa").textContent=fr.includes("pa")?player.pa.toFixed(0)+"°":`given ${player.pa}°`;
   $("o-beta").textContent=`${fr.includes("beta")?"":"given "}β ${(player.beta||0.75).toFixed(2)}`;$("o-beta").title="β = 0.75 is a standard thin disk; smaller β spreads the light outward";
-  $("o-rin").textContent=`${fr.includes("rin")?"":"given "}${player.rin.toFixed(2)} r_g`;$("o-rin").title=`Where thin-disk emission stops. The ISCO must lie inside it, so spin a* ≥ ${minSpin(player.rin).toFixed(2)}`;
+  $("o-rin").innerHTML=sub(`${fr.includes("rin")?"":"given "}${player.rin.toFixed(2)} r_g`);$("o-rin").title=`Where thin-disk emission stops. The ISCO must lie inside it, so spin a* ≥ ${minSpin(player.rin).toFixed(2)}`;
   $("o-gr").textContent=freeList().includes("gr")?"":"given";
   document.querySelectorAll("#c-gr .seg button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.g===player.gr)));
 }
@@ -1016,7 +1090,7 @@ function sharpOK(){return sharp&&sharp.key===sharpKey();}
 function queueSharp(){clearTimeout(sharpTimer);if(playing||busy||!ev||!ev.st||zoom<1.3)return;sharpTimer=setTimeout(doSharp,280);}
 async function doSharp(){if(playing||busy||!ev||zoom<1.3)return;const key=sharpKey(),job=++sharpJob,s0=srcPos(tNow);
   const N=VIEW,Lw=VIEW*PX/2/zoom,task=rayTask(ev.lens,ev.st,tNow,s0.x+panX*PX,s0.y+panY*PX,Lw,N,ev.lens.rpp,0);
-  const [res]=await runTasks([task],()=>{});if(job!==sharpJob||key!==sharpKey())return;
+  const [res]=await runTasks([task],()=>{},{v:2});if(job!==sharpJob||key!==sharpKey())return;
   sharp={key,cv:colorize(res.c,N)};drawMap();}
 (function(){const cv=$("map");const pts=new Map();let last=null,pinch0=null;
   cv.addEventListener("wheel",e=>{if(!ev)return;e.preventDefault();const r=cv.getBoundingClientRect();setZoom(zoom*Math.exp(-e.deltaY*0.0015),e.clientX-r.left,e.clientY-r.top);},{passive:false});
@@ -1038,7 +1112,7 @@ $("lc").addEventListener("pointerdown",e=>{const r=e.currentTarget.getBoundingCl
 
 /* ---------- reveal & score ---------- */
 function bestKey(){return "cc-best-"+freeList().join("")+(opts.nb!=="1"?"-b"+opts.nb:"");}
-function showBest(){let b=null;try{b=localStorage.getItem(bestKey());}catch(e){}$("best").textContent=b?`Best with ${["r½",opts.geom&&"i, θ",opts.isco&&"r_in",opts.gr&&"GR",opts.beta&&"slope"].filter(Boolean).join(" + ")+(opts.nb!=="1"?` · ${opts.nb} bands`:"")}: ${b}`:"";}
+function showBest(){let b=null;try{b=localStorage.getItem(bestKey());}catch(e){}$("best").innerHTML=b?`Best with ${["r½",opts.geom&&"i, θ",opts.isco&&"r<sub>in</sub>",opts.gr&&"GR",opts.beta&&"slope"].filter(Boolean).join(" + ")+(opts.nb!=="1"?` · ${opts.nb} bands`:"")}: ${b}`:"";}
 /* one main button: Lock in & reveal → then New event (Free), Next round (Timed), or done (Daily) */
 function syncMainBtn(){const b=$("revealBtn"),sk=$("skipBtn");
   sk.hidden=playMode!=="free";sk.disabled=busy||!truth||revealed;
@@ -1088,7 +1162,7 @@ function doReveal(){
   rows.push(["Fit quality (Δχ² vs truth)",dchi>=0?"+"+dchi.toFixed(1):dchi.toFixed(1),"0",fq,null]);
   if(hints.length)rows.push(["Hints used",hints.length+"",`−${5*hints.length} pts`,null]);
   rows.push(["χ²/ν",pFit.chi2nu.toFixed(2),tFit.chi2nu.toFixed(2),null]);
-  $("rtab").innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td class="y">${r[1]}</td><td class="t">${r[2]}</td><td>${r[3]==null?"":Math.round(r[3]*100)+"%"}</td><td>${r[4]&&sens[r[4]]!=null?(x=>x<25?"weak":x<150?"moderate":"strong")(sens[r[4]]):""}</td></tr>`).join("");
+  $("rtab").innerHTML=rows.map(r=>`<tr><td>${sub(r[0])}</td><td class="y">${sub(r[1])}</td><td class="t">${sub(r[2])}</td><td>${r[3]==null?"":Math.round(r[3]*100)+"%"}</td><td>${r[4]&&sens[r[4]]!=null?(x=>x<25?"weak":x<150?"moderate":"strong")(sens[r[4]]):""}</td></tr>`).join("");
   $("score").firstChild.textContent=score;
   $("rating").textContent=verdict(score);
   $("result").hidden=false;$("hintBtn").disabled=true;
@@ -1140,13 +1214,13 @@ $("hintBtn").addEventListener("click",()=>{
     if(w.e<0.15)msg="Every parameter is already close. Fine-tune them together to lower χ²/ν.";
     else{const prev=hints.filter(h=>h.k===w.k).length;
       msg=prev?w.txt(w.dir):`The parameter furthest off is the ${({rh:"half-light radius",inc:"inclination",pa:"orientation",rin:"inner edge",gr:"GR setting",beta:"temperature slope"})[w.k]}. Ask again for which way to move it.`;
-      hints.push({k:w.k});const li=document.createElement("li");li.textContent=msg;$("hintList").appendChild(li);$("hintBox").hidden=false;return;}
+      hints.push({k:w.k});const li=document.createElement("li");li.innerHTML=sub(msg);$("hintList").appendChild(li);$("hintBox").hidden=false;return;}
   }
-  hints.push({k:"data"});const li=document.createElement("li");li.textContent=msg;$("hintList").appendChild(li);$("hintBox").hidden=false;
+  hints.push({k:"data"});const li=document.createElement("li");li.innerHTML=sub(msg);$("hintList").appendChild(li);$("hintBox").hidden=false;
 });
 function syncSetupRows(){
   $("rowParams").hidden=!custom;$("rowWin").hidden=!custom;$("lvTag").hidden=custom;document.body.classList.toggle("custom",custom);requestAnimationFrame(()=>{if(data)drawLC();});$("fitNow").hidden=custom;
-  const names={geom:"i, θ",isco:"r_in",gr:"GR",beta:"slope β"};
+  const names={geom:"i, θ",isco:"r<sub>in</sub>",gr:"GR",beta:"slope β"};
   $("fitChips").innerHTML=["<span>r½</span>",...GROUPS.filter(k=>opts[k]).map(k=>`<span>${names[k]}</span>`),
     `<span class="bd">${opts.nb==="1"?"1 band (r)":opts.nb==="3"?"3 bands (gri)":"6 bands (ugrizy)"}</span>`].join("");
 }
@@ -1172,7 +1246,7 @@ function syncLevelButtons(){if($("fitNow"))setTimeout(syncSetupRows,0);
   $("lvTag").textContent=(auto&&!custom?`On track (${RANKS[rankIndex()][1]}): `:"")+(custom?LEVELS.any.tag:sel.size===1?LEVELS[[...sel][0]].tag:`Mixed bag: each event is ${names.join(" or ")}. This one is ${LEVELS[level]?.name||names[0]}.`);
 }
 function fillWin(){for(const [id,i] of [["wMin",0],["wMax",1]])$(id).innerHTML=WIN_OPTS.map(([d,l])=>`<option value="${d}"${d===winRange[i]?" selected":""}>${l}</option>`).join("");}
-function setWin(i,v){endShared();winRange[i]=v;if(winRange[0]>winRange[1])winRange[1-i]=v;fillWin();try{localStorage.setItem("cc-win",winRange.join(","));}catch(e){}if(custom&&!busy)newGame();}
+function setWin(i,v){endShared();pre=null;winRange[i]=v;if(winRange[0]>winRange[1])winRange[1-i]=v;fillWin();try{localStorage.setItem("cc-win",winRange.join(","));}catch(e){}if(custom&&!busy)newGame();}
 try{const w=(localStorage.getItem("cc-win")||"").split(",").map(Number);if(w.length===2&&w.every(x=>WIN_OPTS.some(o=>o[0]===x)))winRange=w;}catch(e){}
 function saveSel(){try{localStorage.setItem("cc-level-pick",custom?"c":auto?"a":[...sel].sort().join(""));}catch(e){}}
 document.querySelectorAll("#modeSeg button").forEach(b=>b.addEventListener("click",()=>{if(busy||!ev)return;const o=b.dataset.o;
@@ -1215,6 +1289,8 @@ function updateSpikes(){
 function shareEvent(){if(!ev||busy)return;const url=eventLink();
   const fallback=()=>{window.prompt("Copy this link to share the event:",url);};
   try{navigator.clipboard.writeText(url).then(()=>toast("Event link copied"),fallback);}catch(e){fallback();}}
+$("evcard").addEventListener("click",e=>{e.stopPropagation();$("evcard").classList.toggle("open");});
+document.addEventListener("click",()=>$("evcard").classList.remove("open"));
 /* ---------- toast ---------- */
 let toastT=0;
 function toast(msg){const t=$("toast");t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600);}
@@ -1226,7 +1302,7 @@ function dailySeed(){return (Math.imul(dayNumber(),2654435761)^0x5eed1e)>>>0;}
 function diskRng(){return mulberry32(dailySeed()^0x7a11^(custom?0:+[...sel].sort().join("")*7919));}
 function getDaily(){try{return JSON.parse(localStorage.getItem("cc-daily")||"{}");}catch(e){return {};}}
 function setDaily(o){try{localStorage.setItem("cc-daily",JSON.stringify(o));}catch(e){}}
-function fitLabel(){return ["r½",opts.geom&&"i, θ",opts.isco&&"r_in",opts.gr&&"GR",opts.beta&&"slope"].filter(Boolean).join(" + ")+(opts.nb!=="1"?` · ${opts.nb} bands`:"");}
+function fitLabel(){return ["r½",opts.geom&&"i, θ",opts.isco&&"r<sub>in</sub>",opts.gr&&"GR",opts.beta&&"slope"].filter(Boolean).join(" + ")+(opts.nb!=="1"?` · ${opts.nb} bands`:"");}
 function shareLine(r){return `Caustic Crossing #${r.n} · ${r.lv?r.lv+" · ":""}${r.stars} · ${r.fit} · ${r.score} pts · ${r.hints} hint${r.hints===1?"":"s"} · streak ${r.streak}`;}
 
 const timed={active:false,round:0,total:0,combo:0,deadline:0,iv:0,ROUNDS:5,SECS:90,next:0};
