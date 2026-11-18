@@ -28,11 +28,6 @@
 html,body{background:var(--bg);color:var(--fg)}
 body{font-family:var(--body);font-size:15px;line-height:1.5}
 .page{max-width:1440px;margin:0 auto;padding-block:10px 8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:12px}
-.page:has(#modebar:not([hidden])) .mapwrap{width:min(100%,max(250px,calc(100vh - 488px)))}
-html.multiband .mapwrap{width:min(100%,max(250px,calc(100vh - 469px)))}   /* the band buttons add a row under the map */
-html.multiband .page:has(#modebar:not([hidden])) .mapwrap{width:min(100%,max(250px,calc(100vh - 523px)))}
-.page:has(#modebar:not([hidden])) #lc{height:clamp(95px,calc(100vh - 678px),360px)}
-body.custom .page:has(#modebar:not([hidden])) #lc{height:clamp(95px,calc(100vh - 730px),300px)}
 .hctl .btn.aboutbtn{text-decoration:none;color:var(--fg);background:transparent;padding:7px 10px;font-weight:500}.hctl .btn.aboutbtn:hover{color:var(--model)}
 .foot{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:7px}
 .foot a{color:var(--muted);text-decoration:none;border-bottom:1px dotted currentColor}.foot a:hover{color:var(--fg)}
@@ -75,7 +70,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--model);outline-
 .head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
 h2{font-family:var(--display);font-weight:400;font-size:13.5px;letter-spacing:.09em;text-transform:uppercase;margin:0;color:var(--muted)}
 .mono{font-family:var(--mono);font-size:13.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-.mapwrap{position:relative;width:min(100%,max(250px,calc(100vh - 434px)));margin-inline:auto;aspect-ratio:1;max-width:100%;border-radius:6px;overflow:hidden;background:#05060c}
+.mapwrap{position:relative;width:min(100%,max(250px,calc(100vh - 470px)));margin-inline:auto;aspect-ratio:1;max-width:100%;border-radius:6px;overflow:hidden;background:#05060c}
 .mapwrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
 .mapwrap canvas.dragging{cursor:grabbing}
 .zoomctl{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:4px;z-index:2}
@@ -143,9 +138,16 @@ h2{font-family:var(--display);font-weight:400;font-size:13.5px;letter-spacing:.0
 #revealBtn:not(:disabled):hover{filter:brightness(1.08)}
 @media (max-width:700px){#revealBtn{min-height:48px}}
 @media (max-width:700px){.actbtns{flex-direction:row;flex-wrap:wrap;width:100%}.actbtns .btn{width:auto;flex:1}}
-.maprow{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap}
-.maprow .cbar{flex:1 1 200px}
-.result{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;background:var(--panel2);border-radius:8px;padding:14px}
+.maprow{display:flex;flex-direction:column;align-items:stretch;gap:6px}
+.maprow .viewopts{justify-content:flex-start;flex-wrap:nowrap;min-height:30px}
+.mapband .one{font-family:var(--mono);font-size:13px;color:var(--muted);white-space:nowrap}
+.maprow .cbar{flex:none}
+.viewopts .mapband{margin-right:auto}
+.ctls{position:relative}
+.result{position:absolute;inset:0;z-index:5;overflow:auto;display:flex;flex-direction:column;gap:4px;background:var(--panel2);border-radius:8px;padding:6px 12px 8px}
+.result[hidden]{display:none}
+.result .score{display:flex;align-items:baseline;gap:12px;font-size:26px;line-height:1.1;flex:none}.result .score small{font-size:13.5px;margin:0}
+.result .tbl{overflow:visible}.result table{font-size:13px}.result td,.result th{padding:2px 6px}
 @media (max-width:560px){.result{grid-template-columns:minmax(0,1fr)}}
 .score{font-family:var(--display);font-size:46px;line-height:1;color:var(--model)}
 .score small{display:block;font-family:var(--body);font-size:14.5px;color:var(--fg);margin-top:6px}
@@ -179,7 +181,9 @@ td.y{color:var(--model)} td.t{color:var(--truth);font-weight:700}
 .warm i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--truth),var(--model) 60%,var(--good));transition:width .25s}
 .chi b.hot{color:var(--good);text-shadow:0 0 12px rgba(147,226,240,.7)}
 #spikeCt{color:var(--good)}
-.modebar{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-family:var(--mono);font-size:14.5px;font-variant-numeric:tabular-nums}
+.modebar{display:flex;flex-wrap:nowrap;gap:6px 16px;align-items:baseline;font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:0;overflow:hidden}
+.modebar .btn{padding:3px 10px;font-size:13px}
+header.top>div:first-child:has(#modebar:not([hidden])) .tag{display:none}
 .modebar b{color:var(--model);font-weight:500}
 .modebar .clock{font-size:20px;color:var(--fg)}
 .modebar .clock.low{color:var(--truth)}
@@ -208,6 +212,8 @@ td.y{color:var(--model)} td.t{color:var(--truth);font-weight:700}
 .stitle{font-family:var(--display);font-size:13.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--model)}
 .stitle .winpick{font-family:var(--body);font-size:14px;letter-spacing:0;text-transform:none;color:var(--muted);margin-left:12px}
 .stitle .winpick select{font:13.5px var(--mono);background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:5px;padding:1px 4px;margin:0 2px}
+.bandpick{margin-left:auto;display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}.bandpick[hidden]{display:none}.bandpick .seg button{padding:2px 10px}
+.setup>.srow{height:32px;align-items:center;overflow:visible}   /* every setup row has the same height, so switching Custom on or off never moves anything */
 .stitle .tagline{font-family:var(--body);font-size:14px;letter-spacing:0;text-transform:none;color:var(--muted);font-style:italic;margin-left:8px}
 #levelSeg{flex-wrap:wrap}
 #levelSeg button{padding:6px 9px}
@@ -215,14 +221,15 @@ td.y{color:var(--model)} td.t{color:var(--truth);font-weight:700}
 .fitchips{display:inline-flex;gap:6px;flex-wrap:wrap}
 .fitchips span{font-size:14px;border:1px solid var(--model);color:var(--model);border-radius:6px;padding:4px 9px}
 .fitchips span.bd{border-color:var(--line);color:var(--muted)}
-body.custom #lc{height:clamp(105px,calc(100vh - 685px),300px)}
 #bandSeg{margin-left:4px}
 .srow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .slab{font-family:var(--mono);font-size:13.5px;color:var(--muted);width:84px;flex:none}
 .setup .seg button{padding:6px 11px;font-size:14px}
 .setup .fixed{font-size:14px;border:1px solid var(--model);color:var(--model);border-radius:6px;padding:5px 10px}
 #modeSeg button{padding:6px 10px;font-size:13.5px}
-.hint{background:var(--panel2);border-left:2px solid var(--model);border-radius:0 6px 6px 0;padding:10px 12px}
+.lcwrap{position:relative}
+.hint{position:absolute;z-index:6;left:64px;right:14px;top:6px;max-height:58%;overflow:auto;background:color-mix(in srgb,var(--panel2) 94%,transparent);border-left:2px solid var(--model);border-radius:0 6px 6px 0;padding:8px 30px 8px 12px;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.hint .hintx{position:absolute;right:6px;top:4px;background:none;border:0;color:var(--muted);font-size:18px;line-height:1;cursor:pointer}.hint .hintx:hover{color:var(--fg)}
 .hint ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;color:var(--fg)}
 .hint li::marker{color:var(--model);font-family:var(--mono)}
 #hintCost{color:var(--muted);margin-left:4px}
@@ -235,6 +242,7 @@ body.custom #lc{height:clamp(105px,calc(100vh - 685px),300px)}
     <div>
       <h1>Caustic <span>Crossing</span></h1>
       <p class="tag">Stars in a distant galaxy sweep their caustics across a quasar. Map its black hole's disk from the flicker.</p>
+      <div class="modebar" id="modebar" hidden></div>
     </div>
     <div class="hctl">
       <label class="cmsel">Theme <select id="themeSel" aria-label="Page colour theme"><option value="lab">Lab</option><option value="daylight">Daylight</option></select></label>
@@ -246,7 +254,6 @@ body.custom #lc{height:clamp(105px,calc(100vh - 685px),300px)}
       </div>
     </div>
   </header>
-  <div class="modebar" id="modebar" hidden></div>
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
   <div class="grid">
@@ -274,7 +281,8 @@ body.custom #lc{height:clamp(105px,calc(100vh - 685px),300px)}
     <div style="display:flex;flex-direction:column;gap:18px;min-width:0">
       <section class="card">
         <div class="head"><h2>Light curve</h2><div class="evrate" id="evRate" title="Difficulty of this event"></div><div class="chi">χ²/ν<b id="chi">—</b><span class="warm" title="How close your curve is to the data"><i id="warmBar"></i></span><span class="mono" id="spikeCt"></span></div></div>
-        <canvas id="lc" aria-label="Light curve with data and model"></canvas>
+        <div class="lcwrap"><canvas id="lc" aria-label="Light curve with data and model"></canvas>
+          <div class="hint" id="hintBox" hidden><button class="hintx" id="hintX" title="Hide hints" aria-label="Hide hints">×</button><ol id="hintList"></ol></div></div>
         <div class="legend">
           <span id="legSingle"><span><i style="background:var(--data)"></i>Observed (with 1σ errors)</span>
           <span><i style="background:var(--model)"></i>Your model</span>
@@ -292,7 +300,11 @@ body.custom #lc{height:clamp(105px,calc(100vh - 685px),300px)}
             <div class="seg" role="group" aria-label="Difficulty: On track (follows your rank) or Custom" id="levelSeg">
               <button data-l="auto" aria-pressed="true">On track</button>
               <button data-l="any" aria-pressed="false">Custom</button>
-            </div>
+            </div><span class="bandpick" id="bandPick" hidden>Bands <div class="seg" role="group" aria-label="Photometric bands" id="bandSeg">
+              <button data-nb="1" aria-pressed="true" title="r band only">r</button>
+              <button data-nb="3" aria-pressed="false" title="g, r, i">gri</button>
+              <button data-nb="6" aria-pressed="false" title="u, g, r, i, z, y (Rubin LSST)">ugrizy</button>
+            </div></span>
           </div>
           <div class="srow" id="fitNow"><span class="slab">This event</span><span class="fitchips" id="fitChips"></span></div>
           <div class="srow" id="rowParams"><span class="slab">Parameters</span>
@@ -303,11 +315,6 @@ body.custom #lc{height:clamp(105px,calc(100vh - 685px),300px)}
               <button id="m-gr" data-o="gr" data-n="GR" aria-pressed="false">+ GR</button>
               <button id="m-beta" data-o="beta" data-n="slope" aria-pressed="false" title="Temperature slope β, T ∝ r⁻ᵝ">+ slope</button>
             </div>
-            <div class="seg" role="group" aria-label="Photometric bands" id="bandSeg">
-              <button data-nb="1" aria-pressed="true" title="r band only">r</button>
-              <button data-nb="3" aria-pressed="false" title="g, r, i">gri</button>
-              <button data-nb="6" aria-pressed="false" title="u, g, r, i, z, y (Rubin LSST)">ugrizy</button>
-            </div>
           </div>
         </div>
         <div class="actbtns">
@@ -317,6 +324,11 @@ body.custom #lc{height:clamp(105px,calc(100vh - 685px),300px)}
         </div>
         <div class="modelgrid">
           <div class="ctls">
+            <div class="result" id="result" hidden>
+          <div class="score" id="score">0<small id="rating"></small></div>
+          <div class="tbl"><table><thead><tr><th>Parameter</th><th>Model</th><th>True</th><th>Match</th><th>Data constraint</th></tr></thead><tbody id="rtab"></tbody></table></div>
+          <div class="share" id="shareBox" hidden><code id="shareTxt"></code><button class="btn ghost" id="copyBtn">Copy</button></div>
+            </div>
             <div class="ctl" id="c-rh"><label for="s-rh" id="lbl-rh">Half-light r½<small>2500 Å</small></label><output id="o-rh"></output><input type="range" id="s-rh" min="0.6" max="2.6" step="0.002"></div>
             <div class="ctl" id="c-inc"><label for="s-inc">Inclination<small>i</small></label><output id="o-inc"></output><input type="range" id="s-inc" min="0" max="80" step="1"></div>
             <div class="ctl" id="c-pa"><label for="s-pa">Orientation<small>θ</small></label><output id="o-pa"></output><input type="range" id="s-pa" min="0" max="179" step="1" title="With GR on, θ runs 0–360°: it also points to the approaching side"></div>
@@ -334,14 +346,8 @@ body.custom #lc{height:clamp(105px,calc(100vh - 685px),300px)}
             <div class="pv"><div class="box truthbox"><canvas id="pvTrue" width="128" height="128"></canvas><div class="q" id="pvQ">?</div></div><span><b>True</b></span></div>
           </div>
         </div>
-        <div class="hint" id="hintBox" hidden><ol id="hintList"></ol></div>
         <div class="actions">
           <div class="tally" id="tally" title="Points from every reveal, saved in this browser"><span class="pts"><b id="tallyPts">0</b> pts<em id="tallyGain" hidden></em></span><div class="rankrow" id="tallyRank"></div><span class="best" id="best"></span></div>
-        </div>
-        <div class="result" id="result" hidden>
-          <div class="score" id="score">0<small id="rating"></small></div>
-          <div class="tbl"><table><thead><tr><th>Parameter</th><th>Model</th><th>True</th><th>Match</th><th>Data constraint</th></tr></thead><tbody id="rtab"></tbody></table></div>
-          <div class="share" id="shareBox" hidden><code id="shareTxt"></code><button class="btn ghost" id="copyBtn">Copy</button></div>
         </div>
       </section>
     </div>
@@ -458,17 +464,14 @@ function nice125(x){const p=10**Math.floor(Math.log10(x)),f=x/p;return (f<2?1:f<
 
 /* ---------- inverse ray shooting (near stars exact, far stars bilinear per block) ---------- */
 function shootFrame(d){var sx=d.sx,sy=d.sy,sm=d.sm,ns=sx.length,N=d.N,Lw=d.Lw,c1=d.c1,c2=d.c2,Rc2=2.2*2.2,A=Math.abs(1-d.kt-d.g),Bb=Math.abs(1-d.kt+d.g),g1=1-d.kc-d.g,g2=1-d.kc+d.g;
-  /* locate the image-plane region whose rays land in this window: coarse scan, keep central 98% of hits */
-  /* centre the scan on the expected images: the stars' net pull at the origin shifts them by α0/(1−κ∓γ), which is large for near-critical lenses */
+  /* Rays are fired over the whole region that could possibly reach this window, centred on the expected images
+     (the stars' net pull at the origin shifts them by α0/(1−κ∓γ), large for near-critical lenses), with a 3 R_E margin.
+     No trimming: faint images near distant stars carry ~10% of the light. The block culling below discards the
+     (vast) empty part of this region exactly and cheaply. */
   var a0x=0,a0y=0;for(var z0=0;z0<ns;z0++){var r0=sx[z0]*sx[z0]+sy[z0]*sy[z0];a0x-=sm[z0]*sx[z0]/r0;a0y-=sm[z0]*sy[z0]/r0;}
   var As=1-d.kt-d.g,Bs=1-d.kt+d.g,X1c=(c1+a0x)/As,X2c=(c2+a0y)/Bs;
-  var W1=(Lw+1)/A+4,W2=(Lw+1)/Bb+4,st=0.07,h1=[],h2=[];
-  for(var yy=X2c-W2;yy<=X2c+W2;yy+=st)for(var xx=X1c-W1;xx<=X1c+W1;xx+=st){var b1=0,b2=0;
-    for(var z=0;z<ns;z++){var pp=xx-sx[z],qz=yy-sy[z],iz=sm[z]/(pp*pp+qz*qz);b1+=pp*iz;b2+=qz*iz;}
-    var u1=g1*xx-b1-c1,u2=g2*yy-b2-c2,sl=Lw*1.2+0.25;if(Math.abs(u1)<sl&&Math.abs(u2)<sl){h1.push(xx);h2.push(yy);}}   // generous slack: small windows can fall between scan points
-  h1.sort(function(a,b){return a-b});h2.sort(function(a,b){return a-b});
-  function pc(a,f){return a.length?a[Math.min(a.length-1,Math.floor(f*a.length))]:0;}
-  var lo1=pc(h1,0.002)-1,hi1=pc(h1,0.998)+1,lo2=pc(h2,0.002)-1,hi2=pc(h2,0.998)+1;
+  var W1=(Lw+1)/A+7,W2=(Lw+1)/Bb+7;
+  var lo1=X1c-W1,hi1=X1c+W1,lo2=X2c-W2,hi2=X2c+W2;
   var nx=Math.round((hi1-lo1)*d.dens),ny=Math.round((hi2-lo2)*d.dens),x1m=lo1,x2m=lo2,dx=(hi1-lo1)/nx,dy=(hi2-lo2)/ny,B=Math.max(8,Math.round(Math.min(0.2,Math.max(Lw/3,0.004))*d.dens)),shot=0;   // blocks ~ a third of the window, so culling stays tight
   var c=new Float32Array(N*N),sc=N/(2*Lw),near=new Int32Array(ns),cf=new Float64Array(8);
   /* two-level culling: first test superblocks (~0.2 R_E) with the same exact bound, then the small blocks inside survivors */
@@ -693,7 +696,7 @@ function frames3(){if(ev.frames3)return ev.frames3;
     for(let y=0;y<n;y++)for(let x=1;x<n-1;x++){const i=y*n+x;T[i]=(A[i-1]+A[i]+A[i+1])/3;}
     for(let y=1;y<n-1;y++)for(let x=0;x<n;x++){const i=y*n+x;B[i]=(T[i-n]+T[i]+T[i+n])/3;}return B;});
   return ev.frames3;}
-function interp(c,t){const x=t/100*(c.length-1),i=Math.min(c.length-2,Math.floor(x)),f=x-i;return c[i]*(1-f)+c[i+1]*f;}
+function interp(c,t){const x=Math.max(0,Math.min(100,t))/100*(c.length-1),i=Math.min(c.length-2,Math.floor(x)),f=x-i;   /* t is clamped, so never NaN at the window edges */return c[i]*(1-f)+c[i+1]*f;}
 function curvesOf(p){const o={};for(const b of bandList())o[b]=curveOf(p,b);return o;}
 // combined fit over all bands: each band gets its own magnitude zero point
 function fit(cs){let chi=0,N=0;const offs={};
@@ -742,7 +745,7 @@ function makeData(rng){
   if(bl.length===1){const m=t.map(x=>interp(tCurves.r,x)+sig*gauss(rng));return {t,m,sig,cad,bands:[{b:"r",t,m,sig}]};}
   // Rubin-like: each night observes a few of the bands (2 of 3, or 3 of 6)
   const per={};for(const b of bl)per[b]=[];
-  for(const x of t){const pick=[...bl].sort(()=>rng()-0.5).slice(0,bl.length>=6?3:2);for(const b of pick)per[b].push(x+(rng()-0.5)*0.1);}
+  for(const x of t){const pick=[...bl].sort(()=>rng()-0.5).slice(0,bl.length>=6?3:2);for(const b of pick)per[b].push(Math.max(0,Math.min(100,x+(rng()-0.5)*0.1)));}
   const bands=bl.map(b=>{const tb=per[b].sort((p,q)=>p-q),sb=Math.round(sig*BANDS[b].nf*1000)/1000;return {b,t:tb,m:tb.map(x=>interp(tCurves[b],x)+sb*gauss(rng)),sig:sb};});
   const R=bands.find(B=>B.b==="r");
   return {t:R.t,m:R.m,sig:R.sig,cad:cad+` · ${bl.length} bands`,bands,nTot:bands.reduce((a,B)=>a+B.t.length,0)};
@@ -1171,7 +1174,7 @@ function doReveal(){
   $("rtab").innerHTML=rows.map(r=>`<tr><td>${sub(r[0])}</td><td class="y">${sub(r[1])}</td><td class="t">${sub(r[2])}</td><td>${r[3]==null?"":Math.round(r[3]*100)+"%"}</td><td>${r[4]&&sens[r[4]]!=null?(x=>x<25?"weak":x<150?"moderate":"strong")(sens[r[4]]):""}</td></tr>`).join("");
   $("score").firstChild.textContent=score;
   $("rating").textContent=verdict(score);
-  $("result").hidden=false;$("hintBtn").disabled=true;
+  $("result").hidden=false;$("hintBtn").disabled=true;$("hintBox").hidden=true;
   try{const b=+localStorage.getItem(bestKey())||0;if(score>b)localStorage.setItem(bestKey(),score);}catch(e){}
   showBest();drawLC();drawMap();
   afterReveal(score);syncMainBtn();
@@ -1225,7 +1228,7 @@ $("hintBtn").addEventListener("click",()=>{
   hints.push({k:"data"});const li=document.createElement("li");li.innerHTML=sub(msg);$("hintList").appendChild(li);$("hintBox").hidden=false;
 });
 function syncSetupRows(){const cu=custom&&playMode!=="daily";
-  $("rowParams").hidden=!cu;$("rowWin").hidden=!cu;$("lvTag").hidden=cu;document.body.classList.toggle("custom",cu);requestAnimationFrame(()=>{if(data)drawLC();});$("fitNow").hidden=cu;
+  $("rowParams").hidden=!cu;$("rowWin").hidden=!cu;$("bandPick").hidden=!cu;$("lvTag").hidden=cu;document.body.classList.toggle("custom",cu);requestAnimationFrame(()=>{if(data)drawLC();});$("fitNow").hidden=cu;
   const names={geom:"i, θ",isco:"r<sub>in</sub>",gr:"GR",beta:"slope β"};
   $("fitChips").innerHTML=["<span>r½</span>",...GROUPS.filter(k=>opts[k]).map(k=>`<span>${names[k]}</span>`),
     `<span class="bd">${opts.nb==="1"?"1 band (r)":opts.nb==="3"?"3 bands (gri)":"6 bands (ugrizy)"}</span>`].join("");
@@ -1238,7 +1241,7 @@ function syncBandUI(){syncSetupRows();{const mb=bandList().length>1;if(document.
   $("bandLeg").innerHTML=multi?bl.map(b=>`<button data-b="${b}" aria-pressed="${!hideB.has(b)}" style="color:${css(BANDS[b].v)}" title="${b}: ${BANDS[b].l} μm observed = ${truth?Math.round(BANDS[b].l*1e4/(1+truth.zq)):"?"} Å rest frame · click to show or hide">${b}</button>`).join(""):"";
   $("bandLeg").querySelectorAll("button").forEach(x=>x.addEventListener("click",()=>{const b=x.dataset.b;if(hideB.has(b))hideB.delete(b);else if(hideB.size<bl.length-1)hideB.add(b);syncBandUI();drawLC();}));
   if(!multi)viewSet=new Set(["r"]);else if(!bl.some(b=>viewSet.has(b)))viewSet=new Set(bl);
-  $("mapBand").innerHTML=multi?bl.map(b=>{const on=viewSet.has(b);return `<button data-b="${b}" aria-pressed="${on}" style="${on?`background:${css(BANDS[b].v)}`:`color:${css(BANDS[b].v)}`}" title="${b}: ${truth?Math.round(BANDS[b].l*1e4/(1+truth.zq)):"?"} Å rest frame · click to add or remove from the map">${b}</button>`;}).join(""):"";
+  $("mapBand").innerHTML=multi?bl.map(b=>{const on=viewSet.has(b);return `<button data-b="${b}" aria-pressed="${on}" style="${on?`background:${css(BANDS[b].v)}`:`color:${css(BANDS[b].v)}`}" title="${b}: ${truth?Math.round(BANDS[b].l*1e4/(1+truth.zq)):"?"} Å rest frame · click to add or remove from the map">${b}</button>`;}).join(""):`<span class="one">${bl[0]} band${PHYS?` · ${Math.round(BANDS[bl[0]].l*1e4/(1+PHYS.zs))} Å rest`:""}</span>`;
   $("mapBand").querySelectorAll("button").forEach(x=>x.addEventListener("click",()=>{const b=x.dataset.b;
     if(viewSet.has(b)){if(bl.filter(q=>viewSet.has(q)).length<=1){toast("Keep at least one band on the map");return;}viewSet.delete(b);}else viewSet.add(b);syncBandUI();renderDisk($("pvYou"),player,"model");if(revealed)renderDisk($("pvTrue"),truth,"truth");drawMap();drawStrip();}));
 }
@@ -1252,6 +1255,7 @@ function syncLevelButtons(){if($("fitNow"))setTimeout(syncSetupRows,0);
     x.title=l==="auto"?"Follows your rank: Newbie and Stargazer Easy · Undergrad and Grad student Easy+Medium · Postdoc Medium · Tenure-tracker to Observatory director Medium+Hard · Caustic whisperer Hard · Einstein\u2019s favourite Hard+Extreme":l==="any"?LEVELS.any.fit:LEVELS[l].fit+" · click to add or remove";});
   const names=[...sel].sort().map(l=>LEVELS[l].name);
   if(playMode==="daily"){$("lvTag").textContent=`Daily: today's event is ${LEVELS[level]?.name||"Medium"}, the same for everyone.`;return;}
+  if(shared){$("lvTag").textContent=`Shared event: ${LEVELS[level]?.name||"Custom"}, the same for everyone who opens its link.`;return;}
   $("lvTag").textContent=(!custom?`On track (${RANKS[rankIndex()][1]}): `:"")+(custom?LEVELS.any.tag:sel.size===1?LEVELS[[...sel][0]].tag:`Mixed bag: each event is ${names.join(" or ")}. This one is ${LEVELS[level]?.name||names[0]}.`);
 }
 function fillWin(){for(const [id,i] of [["wMin",0],["wMax",1]])$(id).innerHTML=WIN_OPTS.map(([d,l])=>`<option value="${d}"${d===winRange[i]?" selected":""}>${l}</option>`).join("");}
@@ -1302,6 +1306,7 @@ function shareEvent(){if(!ev||busy)return;const url=eventLink();
   try{navigator.clipboard.writeText(url).then(()=>toast("Event link copied"),fallback);}catch(e){fallback();}}
 $("evcard").addEventListener("click",e=>{e.stopPropagation();$("evcard").classList.toggle("open");});
 document.addEventListener("click",()=>$("evcard").classList.remove("open"));
+$("hintX").addEventListener("click",()=>{$("hintBox").hidden=true;});
 /* ---------- toast ---------- */
 let toastT=0;
 function toast(msg){const t=$("toast");t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2600);}
